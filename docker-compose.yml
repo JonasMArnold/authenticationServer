@@ -1,0 +1,30 @@
+services:
+  auth_db:
+    container_name: auth_db
+    image: postgres:15.4
+    env_file:
+      - ./database.dev.env
+    volumes:
+      - ./postgres/db-data:/var/lib/postgresql/data/
+      - ./postgres/sql:/docker-entrypoint-initdb.d/:ro
+    ports:
+      - 0.0.0.0:5432:5432
+    networks:
+      - backend
+
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - 0.0.0.0:6379:6379
+    networks:
+      - backend
+
+
+volumes:
+  logvolume01: {}
+
+networks:
+  backend:
+    name: backend
+    driver: bridge

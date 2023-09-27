@@ -1,0 +1,32 @@
+server:
+  port: 8081
+
+logging:
+  level:
+    org.springframework.security: trace
+
+spring:
+  security:
+    oauth2:
+      authorizationserver:
+        client:
+          oidc-client:
+            registration:
+              client-id: "core-server"
+              client-secret: "{noop}V9JxeKYrB8zLqtgQScesRNoygKCKz143Z59iwrABBG0"
+              client-authentication-methods:
+                - "client_secret_basic"
+              authorization-grant-types:
+                - "client_credentials"
+                - "authorization_code"
+                - "refresh_token"
+              redirect-uris:
+                - "http://localhost:8080/login/oauth2/code/core-server"
+                - "http://localhost:8080/index"
+              post-logout-redirect-uris:
+                - "http://localhost:8080/index"
+              scopes:
+                - "openid"
+                - "profile"
+            require-authorization-consent: true
+            
