@@ -1,4 +1,4 @@
-package com.example.auth;
+package com.example.auth.user;
 
 import lombok.Getter;
 import org.apache.commons.logging.Log;

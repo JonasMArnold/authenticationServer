@@ -1,11 +1,11 @@
 package com.example.auth.service;
 
-import com.example.auth.PokerUserDetailsManager;
-import com.example.auth.User;
+import com.example.auth.user.PokerUserDetailsManager;
+import com.example.auth.user.User;
 import com.example.auth.dto.UserCreationDto;
 import com.example.auth.dto.UserDto;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,7 +28,7 @@ public class UserService {
      * @param userCreationDto
      * @return UserCreationSuccessDto
      */
-    public UserDto createUser(UserCreationDto userCreationDto) {
+    public UserDto createUser(@Valid UserCreationDto userCreationDto) {
 
         // Check constraints
 

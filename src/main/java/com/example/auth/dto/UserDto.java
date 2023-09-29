@@ -1,7 +1,7 @@
 package com.example.auth.dto;
 
 
-import com.example.auth.User;
+import com.example.auth.user.User;
 import lombok.Data;
 
 import java.time.LocalDateTime;

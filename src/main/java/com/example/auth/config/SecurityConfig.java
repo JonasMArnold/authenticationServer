@@ -1,7 +1,7 @@
 package com.example.auth.config;
 
-import com.example.auth.PokerUserDetailsManager;
-import com.example.auth.User;
+import com.example.auth.user.PokerUserDetailsManager;
+import com.example.auth.user.User;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
@@ -74,6 +74,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests((authorize) ->
                 authorize
                         .requestMatchers(new AntPathRequestMatcher("/register")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/error/**")).permitAll()
                         .anyRequest().authenticated());
 
         http.formLogin(Customizer.withDefaults());
