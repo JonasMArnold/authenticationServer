@@ -19,8 +19,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
@@ -29,9 +27,9 @@ import org.springframework.security.oauth2.server.authorization.config.annotatio
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
 import java.security.KeyPair;
@@ -73,7 +71,10 @@ public class SecurityConfig {
     @Bean
     @Order(2)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests((authorize) -> authorize.anyRequest().authenticated());
+        http.authorizeHttpRequests((authorize) ->
+                authorize
+                        .requestMatchers(new AntPathRequestMatcher("/register")).permitAll()
+                        .anyRequest().authenticated());
 
         http.formLogin(Customizer.withDefaults());
         http.csrf(AbstractHttpConfigurer::disable);
@@ -104,8 +105,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails userDetails = User.builder()
+    public PokerUserDetailsManager userDetailsService() {
+        UserDetails devAdmin = User.builder()
                 .username("dev_admin")
                 .email("dev@admin.com")
                 .firstName("max")
@@ -114,7 +115,16 @@ public class SecurityConfig {
                 .roles("USER", "ADMIN")
                 .build();
 
-        return new PokerUserDetailsManager(userDetails);
+        UserDetails dev = User.builder()
+                .username("dev")
+                .email("dev@dev.com")
+                .firstName("ben")
+                .lastName("dover")
+                .password("devpass")
+                .roles("USER")
+                .build();
+
+        return new PokerUserDetailsManager(devAdmin, dev);
     }
 
     @Bean
