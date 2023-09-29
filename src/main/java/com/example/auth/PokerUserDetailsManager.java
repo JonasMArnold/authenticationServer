@@ -1,8 +1,10 @@
 package com.example.auth;
 
+import com.example.auth.dto.UserDto;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.log.LogMessage;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,7 +28,7 @@ public class PokerUserDetailsManager implements UserDetailsManager, UserDetailsP
 
     protected final Log logger = LogFactory.getLog(getClass());
 
-    private final Map<String, UserDetails> users = new HashMap<>();
+    private final Map<String, User> users = new HashMap<>();
 
     private SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
             .getContextHolderStrategy();
@@ -68,7 +70,8 @@ public class PokerUserDetailsManager implements UserDetailsManager, UserDetailsP
     @Override
     public void createUser(UserDetails user) {
         Assert.isTrue(!userExists(user.getUsername()), "user should not exist");
-        this.users.put(user.getUsername(), user);
+        Assert.isInstanceOf(User.class, user);
+        this.users.put(user.getUsername(), (User) user);
     }
 
     @Override
@@ -79,7 +82,9 @@ public class PokerUserDetailsManager implements UserDetailsManager, UserDetailsP
     @Override
     public void updateUser(UserDetails user) {
         Assert.isTrue(userExists(user.getUsername()), "user should exist");
-        this.users.put(user.getUsername(), user);
+        Assert.isInstanceOf(User.class, user);
+
+        this.users.put(user.getUsername(), (User) user);
     }
 
     @Override
@@ -108,33 +113,42 @@ public class PokerUserDetailsManager implements UserDetailsManager, UserDetailsP
             this.logger.debug("No authentication manager set. Password won't be re-checked.");
         }
 
-        UserDetails user = this.users.get(username);
+        User user = this.users.get(username);
         Assert.state(user != null, "Current user doesn't exist in database.");
 
-        if (user instanceof User u) {
-            u.setPassword(newPassword);
-        }
+        user.setPassword(newPassword);
     }
 
     @Override
     public UserDetails updatePassword(UserDetails user, String newPassword) {
         String username = user.getUsername();
-        UserDetails _user = this.users.get(username);
-        if (_user instanceof User u) {
-            u.setPassword(newPassword);
-        }
-
-        return _user;
+        User u = this.users.get(username);
+        u.setPassword(newPassword);
+        return u;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserDetails user = this.users.get(username);
+        User user = this.users.get(username);
         if (user == null) {
             throw new UsernameNotFoundException(username);
         }
 
-        return ((User)user).copy();
+        return user.copy();
+    }
+
+    public User loadUserById(UUID id) {
+        User user = this.users.values()
+                .stream()
+                .filter(u -> u.getId().equals(id))
+                .findAny()
+                .orElseThrow(() -> new UsernameNotFoundException("User with id " + id.toString() + " not found"));
+
+        return user.copy();
+    }
+
+    public List<User> getAllUsers() {
+        return new ArrayList<>(this.users.values());
     }
 
     public void setSecurityContextHolderStrategy(SecurityContextHolderStrategy securityContextHolderStrategy) {

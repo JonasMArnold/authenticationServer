@@ -94,11 +94,17 @@ public class User implements UserDetails, CredentialsContainer {
      * @return map of claims
      */
     public Map<String, String> getClaims() {
-        return Map.of(
-                "uuid", this.id.toString(),
-                "firstName", this.firstName,
-                "lastName", this.lastName,
-                "email", this.email);
+        Map<String, String> map = new HashMap<>();
+        map.put("uuid", this.id.toString());
+        map.put("firstName", this.firstName);
+        map.put("lastName", this.lastName);
+        map.put("email", this.email);
+        map.put("verified", String.valueOf(this.emailVerified));
+        map.put("locked", String.valueOf(this.accountLocked));
+        map.put("disabled", String.valueOf(this.accountDisabled));
+        map.put("created_on", String.valueOf(this.accountCreationTimeStamp));
+
+        return map;
     }
 
     @Override

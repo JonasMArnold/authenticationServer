@@ -3,10 +3,13 @@ package com.example.auth.service;
 import com.example.auth.PokerUserDetailsManager;
 import com.example.auth.User;
 import com.example.auth.dto.UserCreationDto;
-import com.example.auth.dto.UserCreationSuccessDto;
+import com.example.auth.dto.UserDto;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Service for managing user accounts
@@ -25,7 +28,7 @@ public class UserService {
      * @param userCreationDto
      * @return UserCreationSuccessDto
      */
-    public UserCreationSuccessDto createUser(UserCreationDto userCreationDto) {
+    public UserDto createUser(UserCreationDto userCreationDto) {
 
         // Check constraints
 
@@ -44,6 +47,19 @@ public class UserService {
 
         this.userDetailsManager.createUser(user);
 
-        return new UserCreationSuccessDto(user);
+        return new UserDto(user);
+    }
+
+    public List<User> getAllUsers() {
+        return this.userDetailsManager.getAllUsers();
+    }
+
+    public User getUserById(UUID id) {
+        return this.userDetailsManager.loadUserById(id);
+    }
+
+    public void deleteUserById(UUID id) {
+        String username = this.userDetailsManager.loadUserById(id).getUsername();
+        this.userDetailsManager.deleteUser(username);
     }
 }

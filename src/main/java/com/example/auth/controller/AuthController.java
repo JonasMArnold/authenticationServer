@@ -1,7 +1,7 @@
-package com.example.auth;
+package com.example.auth.controller;
 
 import com.example.auth.dto.UserCreationDto;
-import com.example.auth.dto.UserCreationSuccessDto;
+import com.example.auth.dto.UserDto;
 import com.example.auth.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -27,7 +27,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserCreationSuccessDto> createUser(UserCreationDto user) {
+    public ResponseEntity<UserDto> createUser(UserCreationDto user) {
         return ResponseEntity.ok(this.userService.createUser(user));
     }
 }
