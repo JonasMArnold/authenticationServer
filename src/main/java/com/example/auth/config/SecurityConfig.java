@@ -1,5 +1,7 @@
 package com.example.auth.config;
 
+import com.example.auth.PokerUserDetailsManager;
+import com.example.auth.User;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
@@ -13,19 +15,20 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
-import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
+import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
@@ -35,7 +38,9 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
@@ -77,18 +82,39 @@ public class SecurityConfig {
     }
 
 
+    @Bean
+    OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizer(UserDetailsService userDetailsService) {
+        return context -> {
+            if (context.getTokenType() == OAuth2TokenType.ACCESS_TOKEN) {
+                Authentication principal = context.getPrincipal();
+                Set<String> authorities = principal.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .collect(Collectors.toSet());
+                context.getClaims().claim("user-authorities", authorities);
+
+            } else if (OidcParameterNames.ID_TOKEN.equals(context.getTokenType().getValue())) {
+                UserDetails userInfo = userDetailsService.loadUserByUsername(context.getPrincipal().getName());
+
+                if (userInfo instanceof User user) {
+                    context.getClaims().claims(claims ->
+                            claims.putAll(user.getClaims()));
+                }
+            }
+        };
+    }
 
     @Bean
     public UserDetailsService userDetailsService() {
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         UserDetails userDetails = User.builder()
                 .username("dev_admin")
-                // test user
-                .password("{bcrypt}" + passwordEncoder.encode("devpass"))
+                .email("dev@admin.com")
+                .firstName("max")
+                .lastName("mustermann")
+                .password("devpass")
                 .roles("USER", "ADMIN")
                 .build();
 
-        return new InMemoryUserDetailsManager(userDetails);
+        return new PokerUserDetailsManager(userDetails);
     }
 
     @Bean
