@@ -75,6 +75,7 @@ public class SecurityConfig {
                 authorize
                         .requestMatchers(new AntPathRequestMatcher("/register")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/error/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasRole("ADMIN")
                         .anyRequest().authenticated());
 
         http.formLogin(Customizer.withDefaults());
@@ -88,6 +89,9 @@ public class SecurityConfig {
     OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizer(UserDetailsService userDetailsService) {
         return context -> {
             if (context.getTokenType() == OAuth2TokenType.ACCESS_TOKEN) {
+
+                // add user roles to access token
+
                 Authentication principal = context.getPrincipal();
                 Set<String> authorities = principal.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
@@ -96,6 +100,8 @@ public class SecurityConfig {
 
             } else if (OidcParameterNames.ID_TOKEN.equals(context.getTokenType().getValue())) {
                 UserDetails userInfo = userDetailsService.loadUserByUsername(context.getPrincipal().getName());
+
+                // add custom claims to ID token
 
                 if (userInfo instanceof User user) {
                     context.getClaims().claims(claims ->
@@ -107,6 +113,9 @@ public class SecurityConfig {
 
     @Bean
     public PokerUserDetailsManager userDetailsService() {
+
+        // temporary test users
+
         UserDetails devAdmin = User.builder()
                 .username("dev_admin")
                 .email("dev@admin.com")
