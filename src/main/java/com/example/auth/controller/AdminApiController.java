@@ -2,6 +2,7 @@ package com.example.auth.controller;
 ;
 import com.example.auth.dto.UserCreationDto;
 import com.example.auth.dto.UserDto;
+import com.example.auth.exceptions.UserCreationException;
 import com.example.auth.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,6 @@ public class AdminApiController {
 
     /**
      * Returns a list of all Users in the database
-     * @return
      */
     @GetMapping("users")
     public ResponseEntity<List<UserDto>> getAllUsers() {
@@ -37,11 +37,9 @@ public class AdminApiController {
 
     /**
      * Creates a user in the database with minimal validation
-     * @param userCreationDto
-     * @return
      */
     @PostMapping("users")
-    public ResponseEntity<UserDto> createUser(UserCreationDto userCreationDto) {
+    public ResponseEntity<UserDto> createUser(UserCreationDto userCreationDto) throws UserCreationException {
         UserDto userDto = this.userService.createUser(userCreationDto);
         return ResponseEntity.ok(userDto);
     }
@@ -49,8 +47,6 @@ public class AdminApiController {
 
     /**
      * Gets user dto by id
-     * @param id
-     * @return
      */
     @GetMapping("users/{id}")
     public ResponseEntity<UserDto> getUserById(@PathVariable UUID id) {
@@ -60,8 +56,6 @@ public class AdminApiController {
 
     /**
      * Fully deletes user from the database by id
-     * @param id
-     * @return
      */
     @DeleteMapping("users/{id}")
     public ResponseEntity<String> deleteUserById(@PathVariable UUID id) {

@@ -1,3 +1,6 @@
+defaultLoginRedirectUrl:
+  "http://localhost:8080/index"
+
 server:
   port: 8081
 

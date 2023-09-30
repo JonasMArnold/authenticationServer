@@ -1,5 +1,6 @@
 package com.example.auth.service;
 
+import com.example.auth.exceptions.UserCreationException;
 import com.example.auth.user.PokerUserDetailsManager;
 import com.example.auth.user.User;
 import com.example.auth.dto.UserCreationDto;
@@ -28,7 +29,7 @@ public class UserService {
      * @param userCreationDto
      * @return UserCreationSuccessDto
      */
-    public UserDto createUser(@Valid UserCreationDto userCreationDto) {
+    public UserDto createUser(@Valid UserCreationDto userCreationDto) throws UserCreationException {
 
         // Check constraints
 
@@ -44,6 +45,10 @@ public class UserService {
                 .password(userCreationDto.getPassword())
                 .roles("USER")
                 .build();
+
+        if (this.userDetailsManager.userExists(user.getUsername())) {
+            throw new UserCreationException("User already exists");
+        }
 
         this.userDetailsManager.createUser(user);
 

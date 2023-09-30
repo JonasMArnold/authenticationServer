@@ -2,6 +2,7 @@ package com.example.auth.controller;
 
 import com.example.auth.dto.UserCreationDto;
 import com.example.auth.dto.UserDto;
+import com.example.auth.exceptions.UserCreationException;
 import com.example.auth.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -62,7 +63,7 @@ public class AuthController {
      * The registration endpoint that accepts a form and creates a new user if the parameters are valid.
      */
     @PostMapping("/register")
-    public ResponseEntity<UserDto> createUser(@Valid UserCreationDto user) {
+    public ResponseEntity<UserDto> createUser(@Valid UserCreationDto user) throws UserCreationException {
         return ResponseEntity.ok(this.userService.createUser(user));
     }
 
