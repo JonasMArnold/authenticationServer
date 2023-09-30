@@ -1,5 +1,6 @@
 package com.example.auth.dto;
 
+import com.example.auth.constraints.NameCharactersConstraint;
 import com.example.auth.constraints.PasswordConstraint;
 import com.example.auth.constraints.UsernameConstraint;
 import jakarta.validation.constraints.Email;
@@ -7,6 +8,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.NonNull;
 
 import java.util.UUID;
 
@@ -20,13 +22,18 @@ public class UserCreationDto {
     private String password;
     private final UUID id; // unique user id
 
+    @NonNull
     @Email
     private final String email;
 
+    @NonNull
     @Size(min = 2, max = 32)
+    @NameCharactersConstraint
     private final String firstName;
 
+    @NonNull
     @Size(min = 2, max = 32)
+    @NameCharactersConstraint
     private final String lastName;
 
 

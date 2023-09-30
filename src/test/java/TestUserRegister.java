@@ -36,7 +36,7 @@ public class TestUserRegister {
 
     @Test
     public void testRegistrationOk() {
-        String username = "testuser12341234A";
+        String username = "testuser12341234";
         String password = "Testpassword1";
         String email = "testemail@example.com";
         String firstName = "test";
@@ -162,7 +162,7 @@ public class TestUserRegister {
         String username = "testuser";
         String password = "Testpassword1";
         String email = "testemail@example.com";
-        String firstName = "te-st";
+        String firstName = "te.st";
         String lastName = "test";
 
         sendAndExpect400(username, password, email, firstName, lastName);
@@ -183,9 +183,9 @@ public class TestUserRegister {
     public void testRegistrationBadChar4() {
         String username = "testuser";
         String password = "Testpassword1";
-        String email = "testemail@exam#ple.com";
+        String email = "testemail@example.com";
         String firstName = "test";
-        String lastName = "test";
+        String lastName = "te st";
 
         sendAndExpect400(username, password, email, firstName, lastName);
     }

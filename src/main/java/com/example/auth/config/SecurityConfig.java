@@ -55,7 +55,7 @@ public class SecurityConfig {
 
         http.exceptionHandling((exceptions) -> exceptions
             .defaultAuthenticationEntryPointFor(
-                new LoginUrlAuthenticationEntryPoint("/login"), // TODO: custom login page here
+                new LoginUrlAuthenticationEntryPoint("/login"),
                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
             )
         );
@@ -74,11 +74,18 @@ public class SecurityConfig {
         http.authorizeHttpRequests((authorize) ->
                 authorize
                         .requestMatchers(new AntPathRequestMatcher("/register")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/recover")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/error/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/css/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/js/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasRole("ADMIN")
                         .anyRequest().authenticated());
 
-        http.formLogin(Customizer.withDefaults());
+        http.formLogin(form -> {
+            form.loginPage("/login");
+            form.permitAll();
+        });
+
         http.csrf(AbstractHttpConfigurer::disable);
 
         return http.build();

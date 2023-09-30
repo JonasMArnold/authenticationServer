@@ -2,26 +2,31 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
 <head>
     <title>Please Log In</title>
+
+    <link th:href="@{/css/style.css}" rel="stylesheet" />
 </head>
 <body>
-<h1>Epic custom login form</h1>
+<h1 class="title_bar">Epic custom login form</h1>
 <div th:if="${param.error}">
     Invalid username and password.</div>
 <div th:if="${param.logout}">
     You have been logged out.</div>
-<form th:action="@{/login}" method="post">
-    <div>
-        <input type="text" name="username" placeholder="Username"/>
-    </div>
-    <div>
-        <input type="password" name="password" placeholder="Password"/>
-    </div>
-    <input type="submit" value="Log in" />
-    <br>
-    <p>Don't have an account? </p>
-    <a th:href="@{/register}">Sign Up!</a>
-    <br>
-    <a th:href="@{/recover}">Forgot password</a>
-</form>
+
+<div class="content">
+    <form th:action="@{/login}" method="post">
+        <div>
+            <input type="text" name="username" placeholder="Username"/>
+        </div>
+        <div>
+            <input type="password" name="password" placeholder="Password"/>
+        </div>
+        <input type="submit" value="Log in" />
+        <br>
+        <p>Don't have an account? </p>
+        <a th:href="@{/register}">Sign Up!</a>
+        <br>
+        <a th:href="@{/recover}">Forgot password</a>
+    </form>
+</div>
 </body>
 </html>

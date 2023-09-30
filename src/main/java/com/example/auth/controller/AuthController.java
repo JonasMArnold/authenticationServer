@@ -48,7 +48,7 @@ public class AuthController {
      * Custom log in page
      */
     @GetMapping("/login")
-    public String oauth2LoginPage(Model model,
+    public String customLogin(Model model,
                                   @CurrentSecurityContext(expression = "authentication") Authentication authentication,
                                   @Value("${spring.security.oauth2.server.login.captcha.enabled:true}") boolean enableCaptchaLogin,
                                   @RequestAttribute(name = "org.springframework.security.web.csrf.CsrfToken", required = false) CsrfToken csrfToken) {
