@@ -113,7 +113,7 @@ public class AuthController {
      * Users who have forgotten their passwords can send themselves a recovery email here.
      */
     @GetMapping("/recover")
-    public String recoverAccount() {
-        return "not implemented";
+    public ResponseEntity<String> recoverAccount() {
+        return ResponseEntity.ok("not implemented");
     }
 }

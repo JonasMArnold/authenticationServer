@@ -9,6 +9,17 @@ logging:
     org.springframework.security: trace
 
 spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    driverClassName: org.postgresql.Driver
+    username: admin
+    password: admin
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate.ddl-auto: create
+    show-sql: false
+
   security:
     oauth2:
       authorizationserver:
@@ -31,5 +42,5 @@ spring:
               scopes:
                 - "openid"
                 - "profile"
-            require-authorization-consent: true
+            require-authorization-consent: false
             

@@ -1,7 +1,6 @@
 package com.example.auth.service;
 
 import com.example.auth.exceptions.UserCreationException;
-import com.example.auth.user.PokerUserDetailsManager;
 import com.example.auth.user.User;
 import com.example.auth.dto.UserCreationDto;
 import com.example.auth.dto.UserDto;
@@ -18,9 +17,9 @@ import java.util.UUID;
 @Service
 public class UserService {
 
-    private PokerUserDetailsManager userDetailsManager;
+    private UserDetailsManagerImpl userDetailsManager;
 
-    public UserService(@Qualifier("userDetailsService") PokerUserDetailsManager userDetailsManager) {
+    public UserService(UserDetailsManagerImpl userDetailsManager) {
         this.userDetailsManager = userDetailsManager;
     }
 
