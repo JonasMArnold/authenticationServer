@@ -46,6 +46,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-authorization-server'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+    runtimeOnly 'org.postgresql:postgresql'
 
     //testing
     testImplementation 'org.easymock:easymock:5.1.0'

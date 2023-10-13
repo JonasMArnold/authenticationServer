@@ -4,8 +4,6 @@ import com.example.auth.constraints.NameCharactersConstraint;
 import com.example.auth.constraints.PasswordConstraint;
 import com.example.auth.constraints.UsernameConstraint;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NonNull;

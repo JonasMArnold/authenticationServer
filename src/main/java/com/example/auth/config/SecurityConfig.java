@@ -1,6 +1,7 @@
 package com.example.auth.config;
 
-import com.example.auth.user.PokerUserDetailsManager;
+import com.example.auth.repository.UserRepository;
+import com.example.auth.service.UserDetailsManagerImpl;
 import com.example.auth.user.User;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -71,6 +72,7 @@ public class SecurityConfig {
     @Bean
     @Order(2)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+
         http.authorizeHttpRequests((authorize) ->
                 authorize
                         .requestMatchers(new AntPathRequestMatcher("/register")).permitAll()
@@ -119,7 +121,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PokerUserDetailsManager userDetailsService() {
+    public UserDetailsManagerImpl userDetailsService(UserRepository userRepository) {
 
         // temporary test users
 
@@ -141,7 +143,7 @@ public class SecurityConfig {
                 .roles("USER")
                 .build();
 
-        return new PokerUserDetailsManager(devAdmin, dev);
+        return new UserDetailsManagerImpl(userRepository, devAdmin, dev);
     }
 
     @Bean
