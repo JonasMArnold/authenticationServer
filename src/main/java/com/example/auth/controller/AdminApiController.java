@@ -4,6 +4,9 @@ import com.example.auth.dto.UserCreationDto;
 import com.example.auth.dto.UserDto;
 import com.example.auth.exceptions.UserCreationException;
 import com.example.auth.service.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,10 +31,14 @@ public class AdminApiController {
      * Returns a list of all Users in the database
      */
     @GetMapping("users")
-    public ResponseEntity<List<UserDto>> getAllUsers() {
-        var users = this.userService.getAllUsers();
-        List<UserDto> userDtos = users.stream().map(UserDto::new).collect(Collectors.toList());
-        return ResponseEntity.ok(userDtos);
+    public ResponseEntity<Page<UserDto>> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction) {
+
+        Page<UserDto> users = userService.getAllUsers(PageRequest.of(page, size, Sort.Direction.fromString(direction), sortBy));
+        return ResponseEntity.ok(users);
     }
 
 
