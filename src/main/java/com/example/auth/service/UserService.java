@@ -1,11 +1,15 @@
 package com.example.auth.service;
 
 import com.example.auth.exceptions.UserCreationException;
+import com.example.auth.repository.UserRepository;
 import com.example.auth.user.User;
 import com.example.auth.dto.UserCreationDto;
 import com.example.auth.dto.UserDto;
+import com.example.auth.user.UserEntity;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,9 +22,12 @@ import java.util.UUID;
 public class UserService {
 
     private UserDetailsManagerImpl userDetailsManager;
+    private UserRepository userRepository; // we can abstract this logic (pagination) down to userDetailsManager
 
-    public UserService(UserDetailsManagerImpl userDetailsManager) {
+    public UserService(UserDetailsManagerImpl userDetailsManager,
+                       UserRepository userRepository) {
         this.userDetailsManager = userDetailsManager;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -54,8 +61,8 @@ public class UserService {
         return new UserDto(user);
     }
 
-    public List<User> getAllUsers() {
-        return this.userDetailsManager.getAllUsers();
+    public Page<UserDto> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable).map(this::convertToUserDto);
     }
 
     public User getUserById(UUID id) {
@@ -66,4 +73,11 @@ public class UserService {
         String username = this.userDetailsManager.loadUserById(id).getUsername();
         this.userDetailsManager.deleteUser(username);
     }
+
+
+
+    private UserDto convertToUserDto(UserEntity userEntity) {
+        return new UserDto(userEntity);
+    }
+
 }

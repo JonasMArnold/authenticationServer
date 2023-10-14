@@ -37,6 +37,9 @@ spring:
               redirect-uris:
                 - "http://localhost:8080/login/oauth2/code/core-server"
                 - "http://localhost:8080/index"
+                - "http://localhost:8083/admin"
+                - "http://localhost:5173/"
+                - "http://localhost:5050/"
               post-logout-redirect-uris:
                 - "http://localhost:8080/index"
               scopes:
