@@ -51,6 +51,7 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
 
+        // apply default auth server configuration
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
@@ -66,6 +67,7 @@ public class SecurityConfig {
         http.oauth2ResourceServer((resourceServer) -> resourceServer
                 .jwt(Customizer.withDefaults()));
 
+        // Temp disable CSRF
         http.csrf(AbstractHttpConfigurer::disable);
 
         // Temp disable CORS
@@ -78,6 +80,7 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
 
+        // handle out custom endpoints in this filter chain
         http.authorizeHttpRequests((authorize) ->
                 authorize
                         .requestMatchers(new AntPathRequestMatcher("/register")).permitAll()
@@ -88,6 +91,7 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasRole("ADMIN")
                         .anyRequest().authenticated());
 
+        // set custom login form
         http.formLogin(form -> {
             form.loginPage("/login");
             form.permitAll();
@@ -98,6 +102,7 @@ public class SecurityConfig {
             conf.logoutSuccessHandler(logoutSuccessHandler());
         });
 
+        // Temp disable CSRF
         http.csrf(AbstractHttpConfigurer::disable);
 
         return http.build();
