@@ -30,6 +30,8 @@ import org.springframework.security.oauth2.server.authorization.token.JwtEncodin
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
@@ -88,12 +90,32 @@ public class SecurityConfig {
             form.permitAll();
         });
 
+        http.logout(conf -> {
+            // default logout url
+            conf.logoutSuccessHandler(logoutSuccessHandler());
+        });
+
         http.csrf(AbstractHttpConfigurer::disable);
 
         return http.build();
     }
 
+    /**
+     * Logout success handler. Called after /logout endpoint is called. Handles redirect after logout.
+     * @return handler
+     */
+    LogoutSuccessHandler logoutSuccessHandler() {
+        SimpleUrlLogoutSuccessHandler handler = new SimpleUrlLogoutSuccessHandler();
+        handler.setTargetUrlParameter("redirect_url");
+        handler.setDefaultTargetUrl("http://localhost:8080/index");
 
+        return handler;
+    }
+
+
+    /**
+     * Adds custom claims to bearer token and ID token
+     */
     @Bean
     OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizer(UserDetailsService userDetailsService) {
         return context -> {
