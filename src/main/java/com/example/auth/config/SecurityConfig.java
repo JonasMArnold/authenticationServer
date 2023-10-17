@@ -8,44 +8,65 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.MediaType;
+import org.springframework.lang.NonNullApi;
+import org.springframework.lang.Nullable;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
+import org.springframework.security.oauth2.jose.jws.JwsAlgorithm;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
+import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
+import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
+import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
-import java.util.Set;
-import java.util.UUID;
+import java.time.Duration;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private static final String ROLES_CLAIM = "user-authorities";
+    private static final String SCOPES_CLAIM = "scope";
 
     @Bean
     @Order(1)
@@ -55,6 +76,7 @@ public class SecurityConfig {
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
+                .registeredClientRepository(clientRepository())
                 .oidc(Customizer.withDefaults());
 
         http.exceptionHandling((exceptions) -> exceptions
@@ -79,6 +101,7 @@ public class SecurityConfig {
     @Bean
     @Order(2)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+        http.securityMatcher(new NegatedRequestMatcher(new AntPathRequestMatcher("/admin/**")));
 
         // handle out custom endpoints in this filter chain
         http.authorizeHttpRequests((authorize) ->
@@ -88,8 +111,11 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/error/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/css/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/js/**")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasRole("ADMIN")
+                        .requestMatchers(new AntPathRequestMatcher("/favicon.ico")).permitAll()
                         .anyRequest().authenticated());
+
+        http.oauth2ResourceServer((resourceServer) -> resourceServer
+                .jwt(Customizer.withDefaults()));
 
         // set custom login form
         http.formLogin(form -> {
@@ -104,8 +130,81 @@ public class SecurityConfig {
 
         // Temp disable CSRF
         http.csrf(AbstractHttpConfigurer::disable);
+        http.cors(AbstractHttpConfigurer::disable);
 
         return http.build();
+    }
+
+
+    @Bean
+    @Order(3)
+    public SecurityFilterChain adminResourceFilterChain(HttpSecurity http) throws Exception {
+
+        // handle out custom endpoints in this filter chain
+        http.authorizeHttpRequests((authorize) ->
+                authorize
+                        .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasRole("ADMIN")
+                        .anyRequest().authenticated());
+
+        http.sessionManagement(conf -> conf.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        http.oauth2ResourceServer((resourceServer) -> resourceServer
+                .jwt(Customizer.withDefaults()));
+
+        // Temp disable CSRF
+        http.csrf(AbstractHttpConfigurer::disable);
+        http.cors(AbstractHttpConfigurer::disable);
+
+
+        return http.build();
+    }
+
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        var grantedAuthoritiesConverter = new Converter<Jwt, Collection<GrantedAuthority>>() {
+
+            @Override
+            public Collection<GrantedAuthority> convert(@Nullable Jwt source) {
+                if (source == null) {
+                    return Collections.emptySet();
+                }
+
+                return parseRolesFromJwt(source);
+            }
+        };
+
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        return jwtAuthenticationConverter;
+    }
+
+
+    private Collection<GrantedAuthority> parseRolesFromJwt(Jwt jwt) {
+        List<GrantedAuthority> authorities = new ArrayList<>();
+
+        var claims = jwt.getClaims();
+
+        if (claims.get(ROLES_CLAIM) instanceof List rolesList) {
+            for (Object role : rolesList) {
+                if (role instanceof String roleString) {
+                    GrantedAuthority authority = new SimpleGrantedAuthority(roleString);
+                    authorities.add(authority);
+                }
+            }
+        }
+
+
+        if (claims.get(SCOPES_CLAIM) instanceof List rolesList) {
+            for (Object role : rolesList) {
+                if (role instanceof String roleString) {
+                    GrantedAuthority authority = new SimpleGrantedAuthority(roleString);
+                    authorities.add(authority);
+                }
+            }
+        }
+
+        return authorities;
     }
 
     /**
@@ -135,7 +234,7 @@ public class SecurityConfig {
                 Set<String> authorities = principal.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toSet());
-                context.getClaims().claim("user-authorities", authorities);
+                context.getClaims().claim(ROLES_CLAIM, authorities);
 
             } else if (OidcParameterNames.ID_TOKEN.equals(context.getTokenType().getValue())) {
                 UserDetails userInfo = userDetailsService.loadUserByUsername(context.getPrincipal().getName());
@@ -148,6 +247,38 @@ public class SecurityConfig {
                 }
             }
         };
+    }
+
+    @Bean
+    RegisteredClientRepository clientRepository() {
+        RegisteredClient coreServer = RegisteredClient
+                .withId("core-server")
+                .clientId("core-server")
+                .clientSettings(ClientSettings.builder()
+                        .requireAuthorizationConsent(false)
+                        .build())
+
+                .clientSecret("{noop}V9JxeKYrB8zLqtgQScesRNoygKCKz143Z59iwrABBG0")
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+
+                .redirectUri("http://localhost:8080/login/oauth2/code/core-server")
+                .redirectUri("http://localhost:8080/index")
+                .redirectUri("http://localhost:8083/admin")
+                .redirectUri("http://localhost:5173/")
+                .redirectUri("http://localhost:5050/")
+
+                .postLogoutRedirectUri("http://localhost:8080/index")
+
+                .scope("openid")
+                .scope("profile")
+
+                .tokenSettings(TokenSettings.builder().accessTokenTimeToLive(Duration.ofMinutes(69)).build())
+                .build();
+
+        return new InMemoryRegisteredClientRepository(List.of(coreServer));
     }
 
     @Bean
@@ -207,11 +338,6 @@ public class SecurityConfig {
     @Bean
     public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
         return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
-    }
-
-    @Bean
-    public AuthorizationServerSettings authorizationServerSettings() {
-        return AuthorizationServerSettings.builder().build();
     }
 
 }
