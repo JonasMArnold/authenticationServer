@@ -8,17 +8,13 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
-import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.lang.NonNullApi;
 import org.springframework.lang.Nullable;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -30,42 +26,30 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
-import org.springframework.security.oauth2.jose.jws.JwsAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
-import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
-import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
-import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
-import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
-import java.util.*;
-import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -73,65 +57,34 @@ import java.util.stream.Collectors;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    // claim names used in the bearer token
     private static final String ROLES_CLAIM = "user-authorities";
     private static final String SCOPES_CLAIM = "scope";
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
+
     @Bean
     @Order(1)
-    public CorsFilter corsFilter() {
-
+    public CorsFilter corsFilter(CorsConfigurationSource corsConfigurationSource) {
         logger.info("Creating corsFilter bean");
-
-
-        return new CorsFilter(corsConfigurationSource());
+        return new CorsFilter(corsConfigurationSource);
     }
 
-    @Bean(name="corsConfigurationSource")
-    CorsConfigurationSource corsConfigurationSource() {
 
-        logger.info("Creating corsConfigurationSource bean");
-
-
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:5173",
-                "http://192.168.2.144:5173"
-        ));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
-        configuration.setAllowCredentials(true);
-        configuration.setAllowedHeaders(List.of(
-                "Authorization",
-                "Content-Type",
-                "Accept",
-                "Origin",
-                "X-Requested-With"
-        ));
-        configuration.setExposedHeaders(List.of(
-                "Cache-Control",
-                "Content-Language",
-                "Content-Type",
-                "Expires",
-                "Last-Modified",
-                "Pragma"
-        ));
-        configuration.setMaxAge(3600L);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
-
+    /**
+     * Configures the authorization server endpoints.
+     */
     @Bean
     @Order(2)
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http, RegisteredClientRepository clientRepository) throws Exception {
 
         logger.info("Creating authorizationServerSecurityFilterChain bean");
 
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
-                .registeredClientRepository(clientRepository())
+                .registeredClientRepository(clientRepository) // autowired from ClientConfig.java
                 .oidc(Customizer.withDefaults());
 
         http.exceptionHandling((exceptions) -> exceptions
@@ -146,12 +99,14 @@ public class SecurityConfig {
 
         http.csrf(AbstractHttpConfigurer::disable);
 
-
-
         return http.build();
     }
 
 
+    /**
+     * Secures pages used to log in, log out, register etc.
+     * Sets custom login menu.
+     */
     @Bean
     @Order(3)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -191,9 +146,14 @@ public class SecurityConfig {
     }
 
 
+    /**
+     * Secures admin endpoints with a bearer token. Does not use session authentication.
+     */
     @Bean
     @Order(4)
     public SecurityFilterChain adminResourceFilterChain(HttpSecurity http) throws Exception {
+
+        logger.info("Creating adminResourceFilterChain bean");
 
         // handle out custom endpoints in this filter chain
         http.authorizeHttpRequests((authorize) ->
@@ -215,6 +175,9 @@ public class SecurityConfig {
     }
 
 
+    /**
+     * The jwtAuthentication converter. Parses authorities using "parseRolesFromJwt" method
+     */
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         var grantedAuthoritiesConverter = new Converter<Jwt, Collection<GrantedAuthority>>() {
@@ -229,17 +192,23 @@ public class SecurityConfig {
             }
         };
 
+        logger.info("Creating jwtAuthenticationConverter bean");
+
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
         return jwtAuthenticationConverter;
     }
 
 
+    /**
+     * Parses authorities from Jwt. Used by resource server filter chains to read the bearer token.
+     */
     private Collection<GrantedAuthority> parseRolesFromJwt(Jwt jwt) {
         List<GrantedAuthority> authorities = new ArrayList<>();
 
         var claims = jwt.getClaims();
 
+        // extract custom roles
         if (claims.get(ROLES_CLAIM) instanceof List rolesList) {
             for (Object role : rolesList) {
                 if (role instanceof String roleString) {
@@ -249,7 +218,7 @@ public class SecurityConfig {
             }
         }
 
-
+        // standard spring boot scopes
         if (claims.get(SCOPES_CLAIM) instanceof List rolesList) {
             for (Object role : rolesList) {
                 if (role instanceof String roleString) {
@@ -274,6 +243,11 @@ public class SecurityConfig {
         return handler;
     }
 
+
+    /**
+     * Customizes bearer Jwt by adding our custom Roles. Also customizes ID token by adding claims that contain
+     * information about the user.
+     */
     @Bean
     OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizer(UserDetailsService userDetailsService) {
         return context -> {
@@ -300,38 +274,10 @@ public class SecurityConfig {
         };
     }
 
-    @Bean
-    RegisteredClientRepository clientRepository() {
-        RegisteredClient coreServer = RegisteredClient
-                .withId("core-server")
-                .clientId("core-server")
-                .clientSettings(ClientSettings.builder()
-                        .requireAuthorizationConsent(false)
-                        .build())
 
-                .clientSecret("{noop}V9JxeKYrB8zLqtgQScesRNoygKCKz143Z59iwrABBG0")
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-
-                .redirectUri("http://localhost:8080/login/oauth2/code/core-server")
-                .redirectUri("http://localhost:8080/index")
-                .redirectUri("http://localhost:8083/admin")
-                .redirectUri("http://localhost:5173/")
-                .redirectUri("http://localhost:5050/")
-
-                .postLogoutRedirectUri("http://localhost:8080/index")
-
-                .scope("openid")
-                .scope("profile")
-
-                .tokenSettings(TokenSettings.builder().accessTokenTimeToLive(Duration.ofMinutes(69)).build())
-                .build();
-
-        return new InMemoryRegisteredClientRepository(List.of(coreServer));
-    }
-
+    /**
+     * Used to temporarily populate user DB with test users. Will be replaced with persistence.
+     */
     @Bean
     public UserDetailsManagerImpl userDetailsService(UserRepository userRepository) {
 
@@ -357,6 +303,7 @@ public class SecurityConfig {
 
         return new UserDetailsManagerImpl(userRepository, devAdmin, dev);
     }
+
 
     @Bean
     public JWKSource<SecurityContext> jwkSource() {
