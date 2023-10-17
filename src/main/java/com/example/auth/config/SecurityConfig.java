@@ -9,10 +9,14 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import jakarta.validation.constraints.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.lang.NonNullApi;
 import org.springframework.lang.Nullable;
@@ -47,16 +51,20 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
-import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
-import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.*;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -68,11 +76,58 @@ public class SecurityConfig {
     private static final String ROLES_CLAIM = "user-authorities";
     private static final String SCOPES_CLAIM = "scope";
 
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+
     @Bean
     @Order(1)
+    public CorsFilter corsFilter() {
+
+        logger.info("Creating corsFilter bean");
+
+
+        return new CorsFilter(corsConfigurationSource());
+    }
+
+    @Bean(name="corsConfigurationSource")
+    CorsConfigurationSource corsConfigurationSource() {
+
+        logger.info("Creating corsConfigurationSource bean");
+
+
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "http://192.168.2.144:5173"
+        ));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+        configuration.setAllowCredentials(true);
+        configuration.setAllowedHeaders(List.of(
+                "Authorization",
+                "Content-Type",
+                "Accept",
+                "Origin",
+                "X-Requested-With"
+        ));
+        configuration.setExposedHeaders(List.of(
+                "Cache-Control",
+                "Content-Language",
+                "Content-Type",
+                "Expires",
+                "Last-Modified",
+                "Pragma"
+        ));
+        configuration.setMaxAge(3600L);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
+    @Order(2)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
 
-        // apply default auth server configuration
+        logger.info("Creating authorizationServerSecurityFilterChain bean");
+
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
@@ -89,21 +144,21 @@ public class SecurityConfig {
         http.oauth2ResourceServer((resourceServer) -> resourceServer
                 .jwt(Customizer.withDefaults()));
 
-        // Temp disable CSRF
         http.csrf(AbstractHttpConfigurer::disable);
 
-        // Temp disable CORS
-        http.cors(AbstractHttpConfigurer::disable);
+
 
         return http.build();
     }
 
+
     @Bean
-    @Order(2)
+    @Order(3)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.securityMatcher(new NegatedRequestMatcher(new AntPathRequestMatcher("/admin/**")));
 
-        // handle out custom endpoints in this filter chain
+        logger.info("Creating defaultSecurityFilterChain bean");
+
         http.authorizeHttpRequests((authorize) ->
                 authorize
                         .requestMatchers(new AntPathRequestMatcher("/register")).permitAll()
@@ -137,7 +192,7 @@ public class SecurityConfig {
 
 
     @Bean
-    @Order(3)
+    @Order(4)
     public SecurityFilterChain adminResourceFilterChain(HttpSecurity http) throws Exception {
 
         // handle out custom endpoints in this filter chain
@@ -219,10 +274,6 @@ public class SecurityConfig {
         return handler;
     }
 
-
-    /**
-     * Adds custom claims to bearer token and ID token
-     */
     @Bean
     OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizer(UserDetailsService userDetailsService) {
         return context -> {
