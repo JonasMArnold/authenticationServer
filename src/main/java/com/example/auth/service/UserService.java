@@ -21,8 +21,8 @@ import java.util.UUID;
 @Service
 public class UserService {
 
-    private UserDetailsManagerImpl userDetailsManager;
-    private UserRepository userRepository; // we can abstract this logic (pagination) down to userDetailsManager
+    private final UserDetailsManagerImpl userDetailsManager;
+    private final UserRepository userRepository; // we can abstract this logic (pagination) down to userDetailsManager
 
     public UserService(UserDetailsManagerImpl userDetailsManager,
                        UserRepository userRepository) {
@@ -32,7 +32,6 @@ public class UserService {
 
     /**
      * Creates user and saves it to the UserDetailsManager
-     * @param userCreationDto
      * @return UserCreationSuccessDto
      */
     public UserDto createUser(@Valid UserCreationDto userCreationDto) throws UserCreationException {
@@ -61,6 +60,16 @@ public class UserService {
         return new UserDto(user);
     }
 
+    /**
+     * Updates the user's password. Validates and hashes password.
+     *
+     * @param user user
+     * @param newPassword plain text password
+     */
+    public void updateUserPassword(User user, String newPassword) {
+        this.userDetailsManager.updatePassword(user, newPassword);
+    }
+
     public Page<UserDto> getAllUsers(Pageable pageable) {
         return userRepository.findAll(pageable).map(this::convertToUserDto);
     }
@@ -69,12 +78,12 @@ public class UserService {
         return this.userDetailsManager.loadUserById(id);
     }
 
+    public User getUserByUsername(String username) { return (User) this.userDetailsManager.loadUserByUsername(username); }
+
     public void deleteUserById(UUID id) {
         String username = this.userDetailsManager.loadUserById(id).getUsername();
         this.userDetailsManager.deleteUser(username);
     }
-
-
 
     private UserDto convertToUserDto(UserEntity userEntity) {
         return new UserDto(userEntity);

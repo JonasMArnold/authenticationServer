@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <title>Recover Account</title>
+
+    <link th:href="@{/css/style.css}" rel="stylesheet" />
+</head>
+<body>
+<h1 class="title_bar">Epic custom recovery form</h1>
+
+<div class="content">
+    <form th:action="@{/recover}" method="post">
+        <label for="username">Please enter your Username:</label>
+        <div>
+            <input type="text" name="username" id="username" placeholder="Username"/>
+        </div>
+
+        <input type="submit" value="Send password reset email" />
+        <br>
+    </form>
+</div>
+</body>
+</html>

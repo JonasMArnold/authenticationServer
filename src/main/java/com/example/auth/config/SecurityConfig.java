@@ -117,7 +117,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests((authorize) ->
                 authorize
                         .requestMatchers(new AntPathRequestMatcher("/register")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/recover")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/recover/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/error/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/css/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/js/**")).permitAll()
@@ -285,7 +285,7 @@ public class SecurityConfig {
 
         UserDetails devAdmin = User.builder()
                 .username("dev_admin")
-                .email("dev@admin.com")
+                .email("hendrik.huebner18@gmail.com")
                 .firstName("max")
                 .lastName("mustermann")
                 .password("devpass")

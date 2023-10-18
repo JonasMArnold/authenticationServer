@@ -147,7 +147,7 @@ public class UserDetailsManagerImpl implements UserDetailsManager, UserDetailsPa
 
     /**
      * Updates password hash of stored user. Returns null if username was not found.
-     * Otherwise returns updated User Object.
+     * Otherwise, returns updated User Object.
      *
      * @param user a "User" Object
      * @param newPassword the password hash
