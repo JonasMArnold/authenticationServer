@@ -2,6 +2,7 @@ package com.example.auth.mail;
 
 import com.example.auth.service.PasswordResetService;
 import com.example.auth.user.User;
+import com.example.auth.util.UrlConstants;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -66,7 +67,7 @@ public class MailService {
     private String generateEmailVerificationLink(User user) {
         String token = this.passwordResetService.getEmailVerificationToken(user);
 
-        return "http://localhost:8081/verify?token=" + token;
+        return UrlConstants.AUTH_URL + "/verify?token=" + token;
     }
 
 
@@ -76,6 +77,6 @@ public class MailService {
     private String generatePasswordResetLink(User user) {
         String token = this.passwordResetService.getPasswordResetToken(user);
 
-        return "http://localhost:8081/recover/reset?token=" + token;
+        return UrlConstants.AUTH_URL + "/recover/reset?token=" + token;
     }
 }

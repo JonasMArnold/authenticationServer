@@ -1,5 +1,6 @@
 package com.example.auth.config;
 
+import com.example.auth.util.UrlConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -35,13 +36,13 @@ public class ClientConfig {
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
 
-                .redirectUri("http://localhost:8080/login/oauth2/code/core-server")
-                .redirectUri("http://localhost:8080/index")
-                .redirectUri("http://localhost:8083/admin")
+                .redirectUri(UrlConstants.LOGIN_REDIRECT)
+                .redirectUri(UrlConstants.HOME_URL)
+                .redirectUri(UrlConstants.ADMIN_DASHBOARD)
                 .redirectUri("http://localhost:5173/")
                 .redirectUri("http://localhost:5050/")
 
-                .postLogoutRedirectUri("http://localhost:8080/index")
+                .postLogoutRedirectUri(UrlConstants.HOME_URL)
 
                 .scope("openid")
                 .scope("profile")

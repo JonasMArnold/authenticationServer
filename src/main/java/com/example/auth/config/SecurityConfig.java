@@ -3,6 +3,7 @@ package com.example.auth.config;
 import com.example.auth.repository.UserRepository;
 import com.example.auth.service.UserDetailsManagerImpl;
 import com.example.auth.user.User;
+import com.example.auth.util.UrlConstants;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
@@ -238,7 +239,7 @@ public class SecurityConfig {
     LogoutSuccessHandler logoutSuccessHandler() {
         SimpleUrlLogoutSuccessHandler handler = new SimpleUrlLogoutSuccessHandler();
         handler.setTargetUrlParameter("redirect_url");
-        handler.setDefaultTargetUrl("http://localhost:8080/index");
+        handler.setDefaultTargetUrl(UrlConstants.HOME_URL);
 
         return handler;
     }
