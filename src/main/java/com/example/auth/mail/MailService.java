@@ -1,6 +1,6 @@
 package com.example.auth.mail;
 
-import com.example.auth.service.PasswordResetService;
+import com.example.auth.service.TokenService;
 import com.example.auth.user.User;
 import com.example.auth.util.UrlConstants;
 import org.springframework.mail.SimpleMailMessage;
@@ -13,11 +13,11 @@ public class MailService {
     private static final String SOURCE_ADDRESS = "pokermindgto@gmail.com";
 
     private final JavaMailSender emailSender;
-    private final PasswordResetService passwordResetService;
+    private final TokenService tokenService;
 
-    public MailService(JavaMailSender javaMailSender, PasswordResetService passwordResetService) {
+    public MailService(JavaMailSender javaMailSender, TokenService tokenService) {
         this.emailSender = javaMailSender;
-        this.passwordResetService = passwordResetService;
+        this.tokenService = tokenService;
     }
 
 
@@ -65,7 +65,7 @@ public class MailService {
      * Generate password reset token for reset link
      */
     private String generateEmailVerificationLink(User user) {
-        String token = this.passwordResetService.getEmailVerificationToken(user);
+        String token = this.tokenService.getEmailVerificationToken(user);
 
         return UrlConstants.AUTH_URL + "/verify?token=" + token;
     }
@@ -75,7 +75,7 @@ public class MailService {
      * Generate password reset token for reset link
      */
     private String generatePasswordResetLink(User user) {
-        String token = this.passwordResetService.getPasswordResetToken(user);
+        String token = this.tokenService.getPasswordResetToken(user);
 
         return UrlConstants.AUTH_URL + "/recover/reset?token=" + token;
     }

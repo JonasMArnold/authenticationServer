@@ -2,6 +2,7 @@ package com.example.auth.constraints;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
 
 public class UsernameValidator implements ConstraintValidator<UsernameConstraint, String> {
 
@@ -10,20 +11,31 @@ public class UsernameValidator implements ConstraintValidator<UsernameConstraint
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
+        HibernateConstraintValidatorContext hibernateContext =
+                context.unwrap( HibernateConstraintValidatorContext.class );
+
+        hibernateContext.disableDefaultConstraintViolation();
+
         if (value == null) return false;
 
         if (value.length() < 3) {
-            context.buildConstraintViolationWithTemplate("Username must be at least 3 characters long!");
+            hibernateContext
+                    .buildConstraintViolationWithTemplate("Username must be at least 3 characters long!")
+                    .addConstraintViolation();
             return false;
         }
 
         if (value.length() > 16) {
-            context.buildConstraintViolationWithTemplate("Username cannot be longer than 16 characters!");
+            hibernateContext
+                    .buildConstraintViolationWithTemplate("Username cannot be longer than 16 characters!")
+                    .addConstraintViolation();
             return false;
         }
 
         if (!value.matches("^[a-zA-Z0-9_]*$")) {
-            context.buildConstraintViolationWithTemplate("Username can only contain letters, numbers and underscores!");
+            hibernateContext
+                    .buildConstraintViolationWithTemplate("Username can only contain letters, numbers and underscores!")
+                    .addConstraintViolation();
             return false;
         }
 

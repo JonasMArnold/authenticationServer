@@ -2,6 +2,7 @@ package com.example.auth.constraints;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
 
 public class PasswordValidator implements ConstraintValidator<PasswordConstraint, String> {
 
@@ -10,28 +11,46 @@ public class PasswordValidator implements ConstraintValidator<PasswordConstraint
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
+        HibernateConstraintValidatorContext hibernateContext =
+                context.unwrap( HibernateConstraintValidatorContext.class );
+
+        hibernateContext.disableDefaultConstraintViolation();
+
+        if (value == null) return false;
+
         if (value.length() < 8) {
-            context.buildConstraintViolationWithTemplate("Password must be at least 8 characters long!");
+            hibernateContext
+                    .buildConstraintViolationWithTemplate("Password cannot be shorter than 8 characters!")
+                    .addConstraintViolation();
+
             return false;
         }
 
         if (value.length() > 128) {
-            context.buildConstraintViolationWithTemplate("Password cannot be longer than 128 characters!");
+            hibernateContext
+                    .buildConstraintViolationWithTemplate("Password cannot be longer than 128 characters!")
+                    .addConstraintViolation();
             return false;
         }
 
         if (!value.matches(".*\\d+.*")) {
-            context.buildConstraintViolationWithTemplate("Password must contain at least one digit!");
+            hibernateContext
+                    .buildConstraintViolationWithTemplate("Password must contain at least one digit!")
+                    .addConstraintViolation();
             return false;
         }
 
         if (!value.matches(".*[A-Z]+.*")) {
-            context.buildConstraintViolationWithTemplate("Password must contain at least one capital letter!");
+            hibernateContext
+                    .buildConstraintViolationWithTemplate("Password must contain at least one capital letter!")
+                    .addConstraintViolation();
             return false;
         }
 
         if (!value.matches(".*[a-z]+.*")) {
-            context.buildConstraintViolationWithTemplate("Password must contain at least one non capital letter!");
+            hibernateContext
+                    .buildConstraintViolationWithTemplate("Password must contain at least one non capital letter!")
+                    .addConstraintViolation();
             return false;
         }
 
