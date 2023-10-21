@@ -118,6 +118,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests((authorize) ->
                 authorize
                         .requestMatchers(new AntPathRequestMatcher("/register")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/verify")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/recover/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/error/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/css/**")).permitAll()

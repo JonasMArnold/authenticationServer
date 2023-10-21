@@ -1,6 +1,7 @@
 package com.example.auth.service;
 
 import com.example.auth.exceptions.UserCreationException;
+import com.example.auth.mail.MailService;
 import com.example.auth.repository.UserRepository;
 import com.example.auth.user.User;
 import com.example.auth.dto.UserCreationDto;
@@ -23,11 +24,15 @@ public class UserService {
 
     private final UserDetailsManagerImpl userDetailsManager;
     private final UserRepository userRepository; // we can abstract this logic (pagination) down to userDetailsManager
+    private final MailService mailService;
 
     public UserService(UserDetailsManagerImpl userDetailsManager,
-                       UserRepository userRepository) {
+                       UserRepository userRepository,
+                       MailService mailService) {
+
         this.userDetailsManager = userDetailsManager;
         this.userRepository = userRepository;
+        this.mailService = mailService;
     }
 
     /**
@@ -35,12 +40,6 @@ public class UserService {
      * @return UserCreationSuccessDto
      */
     public UserDto createUser(@Valid UserCreationDto userCreationDto) throws UserCreationException {
-
-        // Check constraints
-
-        // Check email exists
-
-        // send verification mail
 
         User user = (User) User.builder()
                 .username(userCreationDto.getUsername())
@@ -50,6 +49,9 @@ public class UserService {
                 .password(userCreationDto.getPassword())
                 .roles("USER")
                 .build();
+
+        // send verification mail
+        this.mailService.sendEmailVerificationMail(user);
 
         if (this.userDetailsManager.userExists(user.getUsername())) {
             throw new UserCreationException("User already exists");
@@ -68,6 +70,11 @@ public class UserService {
      */
     public void updateUserPassword(User user, String newPassword) {
         this.userDetailsManager.updatePassword(user, newPassword);
+    }
+
+    public void setVerified(User user, boolean verified) {
+        user.setEmailVerified(verified);
+        this.userDetailsManager.updateUser(user);
     }
 
     public Page<UserDto> getAllUsers(Pageable pageable) {

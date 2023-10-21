@@ -3,12 +3,14 @@ package com.example.auth.controller;
 import com.example.auth.dto.PasswordChangeDto;
 import com.example.auth.dto.UserCreationDto;
 import com.example.auth.dto.UserDto;
+import com.example.auth.exceptions.InvalidEmailVerificationTokenException;
 import com.example.auth.exceptions.InvalidPasswordResetTokenException;
 import com.example.auth.exceptions.UserCreationException;
 import com.example.auth.mail.MailService;
-import com.example.auth.service.PasswordResetService;
+import com.example.auth.service.TokenService;
 import com.example.auth.service.UserService;
 import com.example.auth.user.User;
+import com.example.auth.util.UrlConstants;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -23,6 +25,7 @@ import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.result.view.RedirectView;
 
 import java.util.UUID;
 
@@ -37,14 +40,14 @@ public class AuthController {
     private final MailService mailService;
     private final UserService userService;
     private final String defaultRedirectUrl;
-    private final PasswordResetService passwordResetService;
+    private final TokenService tokenService;
 
     public AuthController(UserService userService, MailService mailService,
-                          PasswordResetService passwordResetService, @Value("${defaultLoginRedirectUrl}")  String defaultRedirectUrl) {
+                          TokenService tokenService, @Value("${defaultLoginRedirectUrl}")  String defaultRedirectUrl) {
         this.userService = userService;
         this.defaultRedirectUrl = defaultRedirectUrl;
         this.mailService = mailService;
-        this.passwordResetService = passwordResetService;
+        this.tokenService = tokenService;
     }
 
     /**
@@ -168,7 +171,7 @@ public class AuthController {
     public ResponseEntity<String> resetPassword(@Valid PasswordChangeDto passwordChange) throws InvalidPasswordResetTokenException {
         logger.debug("Received password reset request with token: " + passwordChange.getToken());
 
-        UUID userId = passwordResetService.getUserFromTokenString(passwordChange.getToken());
+        UUID userId = tokenService.verifyPasswordResetToken(passwordChange.getToken());
         User user = this.userService.getUserById(userId);
 
         this.userService.updateUserPassword(user, passwordChange.getNewPassword());
@@ -176,5 +179,21 @@ public class AuthController {
         logger.info("Set new password for user " + user.getUsername());
 
         return ResponseEntity.ok("reset password");
+    }
+
+
+    /**
+     * Verify email. When this endpoint is called with a correct token, the email of the corresponding user will be verified.
+     * Redirects to default redirect url.
+     */
+    @GetMapping("/verify")
+    public String verifyEmail(@RequestParam String token) throws InvalidEmailVerificationTokenException {
+        logger.trace("Received email verification request");
+
+        UUID id = this.tokenService.verifyEmailVerification(token);
+        User user = this.userService.getUserById(id);
+        this.userService.setVerified(user, true);
+
+        return "redirect:" + UrlConstants.HOME_URL;
     }
 }

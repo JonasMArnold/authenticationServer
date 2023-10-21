@@ -106,6 +106,7 @@ public class UserDetailsManagerImpl implements UserDetailsManager, UserDetailsPa
         this.userCache.evict(id);
     }
 
+
     @Override
     public void updateUser(UserDetails user) {
         Assert.isTrue(userExists(user.getUsername()), "user should exist");

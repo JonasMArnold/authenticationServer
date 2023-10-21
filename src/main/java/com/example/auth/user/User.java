@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.Assert;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -38,16 +39,16 @@ public class User implements UserDetails, CredentialsContainer {
     private final LocalDateTime accountCreationTimeStamp;
 
     // true if email has been verified
-    private final boolean emailVerified;
+    private boolean emailVerified;
 
     // true if the user disabled their account. Will be automatically deleted after 14 days of inactivity
-    private final boolean accountDisabled;
+    private boolean accountDisabled;
 
     // Nullable
-    private final LocalDateTime accountDisableTimeStamp;
+    private LocalDateTime accountDisableTimeStamp;
 
     // true if moderator/admin locked the account of the user, for example because of suspicious activity
-    private final boolean accountLocked;
+    private boolean accountLocked;
 
 
     // minimal constructor
@@ -140,6 +141,19 @@ public class User implements UserDetails, CredentialsContainer {
 
     public void setPassword(String newPassword) { // TODO: do this properly
         this.password = newPassword;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
+    public void setAccountDisabled(boolean accountDisabled) {
+        this.accountDisabled = accountDisabled;
+        this.accountDisableTimeStamp = LocalDateTime.from(Instant.now());
+    }
+
+    public void setAccountLocked(boolean accountLocked) {
+        this.accountLocked = accountLocked;
     }
 
     /**
