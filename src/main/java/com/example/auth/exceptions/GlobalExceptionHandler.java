@@ -60,6 +60,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserCreationException.class)
     @ResponseBody
     public ResponseEntity<String> userCreationExceptionHandler(UserCreationException exception) {
-        return ResponseEntity.internalServerError().body(getJsonString(exception.getMessage()));
+        return ResponseEntity.badRequest().body(getJsonString(exception.getMessage()));
     }
 }

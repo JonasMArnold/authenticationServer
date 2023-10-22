@@ -160,18 +160,17 @@ public class SecurityConfig {
         // handle out custom endpoints in this filter chain
         http.authorizeHttpRequests((authorize) ->
                 authorize
-                        .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasRole("ADMIN")
+                        .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasAuthority("SCOPE_admin_api")
                         .anyRequest().authenticated());
 
         http.sessionManagement(conf -> conf.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.oauth2ResourceServer((resourceServer) -> resourceServer
-                .jwt(Customizer.withDefaults()));
+                .jwt(customizer -> customizer.jwtAuthenticationConverter(jwtAuthenticationConverter())));
 
         // Temp disable CSRF
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(AbstractHttpConfigurer::disable);
-
 
         return http.build();
     }

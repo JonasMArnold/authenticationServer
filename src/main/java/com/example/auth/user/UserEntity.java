@@ -29,12 +29,10 @@ public class UserEntity {
     private String email;
 
     @NonNull
-    @Size(min = 2, max = 32)
     @NameCharactersConstraint
     private String firstName;
 
     @NonNull
-    @Size(min = 2, max = 32)
     @NameCharactersConstraint
     private String lastName;
 

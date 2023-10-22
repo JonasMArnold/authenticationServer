@@ -1,5 +1,6 @@
 package com.example.auth.constraints;
 
+import com.example.auth.util.ErrorCodeConstants;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
@@ -14,27 +15,28 @@ public class UsernameValidator implements ConstraintValidator<UsernameConstraint
         HibernateConstraintValidatorContext hibernateContext =
                 context.unwrap( HibernateConstraintValidatorContext.class );
 
-        hibernateContext.disableDefaultConstraintViolation();
 
         if (value == null) return false;
 
+        hibernateContext.disableDefaultConstraintViolation();
+
         if (value.length() < 3) {
             hibernateContext
-                    .buildConstraintViolationWithTemplate("Username must be at least 3 characters long!")
+                    .buildConstraintViolationWithTemplate(String.valueOf(ErrorCodeConstants.USERNAME_TOO_SHORT))
                     .addConstraintViolation();
             return false;
         }
 
         if (value.length() > 16) {
             hibernateContext
-                    .buildConstraintViolationWithTemplate("Username cannot be longer than 16 characters!")
+                    .buildConstraintViolationWithTemplate(String.valueOf(ErrorCodeConstants.USERNAME_TOO_LONG))
                     .addConstraintViolation();
             return false;
         }
 
         if (!value.matches("^[a-zA-Z0-9_]*$")) {
             hibernateContext
-                    .buildConstraintViolationWithTemplate("Username can only contain letters, numbers and underscores!")
+                    .buildConstraintViolationWithTemplate(String.valueOf(ErrorCodeConstants.USERNAME_BAD_CHAR))
                     .addConstraintViolation();
             return false;
         }

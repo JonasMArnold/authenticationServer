@@ -1,6 +1,8 @@
 package com.example.auth.repository;
 
 import com.example.auth.user.UserEntity;
+import jakarta.validation.constraints.Email;
+import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,4 +17,6 @@ public interface UserRepository extends JpaRepository<UserEntity, UUID> {
     void deleteByUsername(String username);
 
     boolean existsByUsername(String username);
+
+    boolean existsByEmail(String email);
 }

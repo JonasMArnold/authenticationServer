@@ -1,5 +1,9 @@
-defaultLoginRedirectUrl:
-  "http://localhost:8080/index"
+
+# custom properties
+pokermind:
+  send-verification-mail: true
+  default-login-redirect-url:
+    "http://localhost:8080/index"
 
 server:
   port: 8081

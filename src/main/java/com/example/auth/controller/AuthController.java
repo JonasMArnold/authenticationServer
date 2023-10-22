@@ -1,5 +1,6 @@
 package com.example.auth.controller;
 
+import com.example.auth.config.AuthorizationServerConfig;
 import com.example.auth.dto.PasswordChangeDto;
 import com.example.auth.dto.UserCreationDto;
 import com.example.auth.dto.UserDto;
@@ -39,13 +40,13 @@ public class AuthController {
 
     private final MailService mailService;
     private final UserService userService;
-    private final String defaultRedirectUrl;
+    private final AuthorizationServerConfig config;
     private final TokenService tokenService;
 
     public AuthController(UserService userService, MailService mailService,
-                          TokenService tokenService, @Value("${defaultLoginRedirectUrl}")  String defaultRedirectUrl) {
+                          TokenService tokenService, AuthorizationServerConfig config) {
         this.userService = userService;
-        this.defaultRedirectUrl = defaultRedirectUrl;
+        this.config = config;
         this.mailService = mailService;
         this.tokenService = tokenService;
     }
@@ -55,7 +56,7 @@ public class AuthController {
      */
     @GetMapping("/")
     public String baseUrl() {
-        return "redirect:" + this.defaultRedirectUrl;
+        return "redirect:" + this.config.defaultRedirectUrl();
     }
 
 
@@ -100,12 +101,12 @@ public class AuthController {
 
             } else {
                 logger.debug("Session does not contain redirect information");
-                redirectUrl = this.defaultRedirectUrl;
+                redirectUrl = this.config.defaultRedirectUrl();
             }
 
         } catch (IllegalStateException e) {
             logger.debug("Invalid session: Session expired");
-            redirectUrl = this.defaultRedirectUrl;
+            redirectUrl = this.config.defaultRedirectUrl();
         }
 
         if (!(authentication instanceof AnonymousAuthenticationToken)){

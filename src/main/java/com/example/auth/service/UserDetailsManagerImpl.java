@@ -131,6 +131,14 @@ public class UserDetailsManagerImpl implements UserDetailsManager, UserDetailsPa
     }
 
     /**
+     * Returns true if user with email exists
+     * @param email email
+     */
+    public boolean emailExists(String email) {
+        return this.userRepository.existsByEmail(email);
+    }
+
+    /**
      * Returns true if user exists
      * @param id uuid
      */
@@ -209,5 +217,4 @@ public class UserDetailsManagerImpl implements UserDetailsManager, UserDetailsPa
                 map(this::convertToUser)
                 .collect(Collectors.toList());
     }
-
 }

@@ -1,5 +1,6 @@
 package com.example.auth.service;
 
+import com.example.auth.config.AuthorizationServerConfig;
 import com.example.auth.exceptions.UserCreationException;
 import com.example.auth.mail.MailService;
 import com.example.auth.repository.UserRepository;
@@ -7,6 +8,7 @@ import com.example.auth.user.User;
 import com.example.auth.dto.UserCreationDto;
 import com.example.auth.dto.UserDto;
 import com.example.auth.user.UserEntity;
+import com.example.auth.util.ErrorCodeConstants;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
@@ -25,14 +27,17 @@ public class UserService {
     private final UserDetailsManagerImpl userDetailsManager;
     private final UserRepository userRepository; // we can abstract this logic (pagination) down to userDetailsManager
     private final MailService mailService;
+    private final AuthorizationServerConfig config;
 
     public UserService(UserDetailsManagerImpl userDetailsManager,
                        UserRepository userRepository,
-                       MailService mailService) {
+                       MailService mailService,
+                       AuthorizationServerConfig config) {
 
         this.userDetailsManager = userDetailsManager;
         this.userRepository = userRepository;
         this.mailService = mailService;
+        this.config = config;
     }
 
     /**
@@ -50,12 +55,20 @@ public class UserService {
                 .roles("USER")
                 .build();
 
-        // send verification mail
-        this.mailService.sendEmailVerificationMail(user);
 
         if (this.userDetailsManager.userExists(user.getUsername())) {
-            throw new UserCreationException("User already exists");
+            throw new UserCreationException(String.valueOf(ErrorCodeConstants.USERNAME_EXISTS));
         }
+
+        if (this.userDetailsManager.emailExists(user.getEmail())) {
+            throw new UserCreationException(String.valueOf(ErrorCodeConstants.EMAIL_EXISTS));
+        }
+
+        // send verification mail
+        if (this.config.isSendVerificationMail()) {
+            this.mailService.sendEmailVerificationMail(user);
+        }
+
 
         this.userDetailsManager.createUser(user);
 

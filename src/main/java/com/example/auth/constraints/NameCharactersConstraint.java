@@ -5,6 +5,8 @@ import jakarta.validation.Payload;
 
 import java.lang.annotation.*;
 
+import static com.example.auth.util.ErrorCodeConstants.NAME_CANNOT_CONTAIN_CHAR;
+
 /**
  * Validates
  */
@@ -14,7 +16,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NameCharactersConstraint {
 
-    String message() default "Only letters, whitespace and dashes are allowed.";
+    String message() default "" + NAME_CANNOT_CONTAIN_CHAR;
 
     Class<?>[] groups() default {};
 

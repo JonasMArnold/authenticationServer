@@ -47,11 +47,31 @@ public class ClientConfig {
                 .scope("openid")
                 .scope("profile")
 
-                .tokenSettings(TokenSettings.builder().accessTokenTimeToLive(Duration.ofMinutes(69)).build())
+                .tokenSettings(TokenSettings.builder()
+                        .accessTokenTimeToLive(Duration.ofMinutes(1))
+                        .refreshTokenTimeToLive(Duration.ofMinutes(30))
+                        .build())
+                .build();
+
+        RegisteredClient adminApi = RegisteredClient
+                .withId("admin-api")
+                .clientId("admin-api")
+                .clientSettings(ClientSettings.builder()
+                        .requireAuthorizationConsent(false)
+                        .build())
+
+                .clientSecret("{noop}Trqp1P2WxREhLL3QHFBtj4Crkv90yPcX1PekKduA")
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .scope("admin_api")
+                .tokenSettings(TokenSettings.builder()
+                        .accessTokenTimeToLive(Duration.ofMinutes(1))
+                        .refreshTokenTimeToLive(Duration.ofMinutes(30))
+                        .build())
                 .build();
 
         logger.info("Creating clientRepository bean");
 
-        return new InMemoryRegisteredClientRepository(List.of(coreServer));
+        return new InMemoryRegisteredClientRepository(List.of(coreServer, adminApi));
     }
 }
