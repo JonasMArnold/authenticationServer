@@ -2,20 +2,18 @@ package com.example.auth.service;
 
 import com.example.auth.config.AuthorizationServerConfig;
 import com.example.auth.exceptions.UserCreationException;
-import com.example.auth.mail.MailService;
 import com.example.auth.repository.UserRepository;
 import com.example.auth.user.User;
 import com.example.auth.dto.UserCreationDto;
 import com.example.auth.dto.UserDto;
 import com.example.auth.user.UserEntity;
 import com.example.auth.util.ErrorCodeConstants;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -66,7 +64,14 @@ public class UserService {
 
         // send verification mail
         if (this.config.isSendVerificationMail()) {
-            this.mailService.sendEmailVerificationMail(user);
+            try {
+                this.mailService.sendEmailVerificationMail(user);
+
+            } catch (MessagingException e) {
+                e.printStackTrace();
+
+                throw new UserCreationException("Email error");
+            }
         }
 
 

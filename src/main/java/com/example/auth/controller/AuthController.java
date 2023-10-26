@@ -7,11 +7,12 @@ import com.example.auth.dto.UserDto;
 import com.example.auth.exceptions.InvalidEmailVerificationTokenException;
 import com.example.auth.exceptions.InvalidPasswordResetTokenException;
 import com.example.auth.exceptions.UserCreationException;
-import com.example.auth.mail.MailService;
+import com.example.auth.service.MailService;
 import com.example.auth.service.TokenService;
 import com.example.auth.service.UserService;
 import com.example.auth.user.User;
 import com.example.auth.util.UrlConstants;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -26,7 +27,6 @@ import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.result.view.RedirectView;
 
 import java.util.UUID;
 
@@ -137,7 +137,7 @@ public class AuthController {
      * address.
      */
     @PostMapping("/recover")
-    public ResponseEntity<String> sendRecoverMail(String username) {
+    public ResponseEntity<String> sendRecoverMail(String username) throws MessagingException {
         User user = userService.getUserByUsername(username);
 
         if (user == null) {

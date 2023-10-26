@@ -50,18 +50,6 @@ public class User implements UserDetails, CredentialsContainer {
     // true if moderator/admin locked the account of the user, for example because of suspicious activity
     private boolean accountLocked;
 
-
-    // minimal constructor
-    public User(String username,
-                String password,
-                String email,
-                String firstName,
-                String lastName) {
-
-        this(username, password, email, firstName, lastName, UUID.randomUUID(),
-                Set.of(), false, false, false, LocalDateTime.now(), null);
-    }
-
     // all args constructor
     public User(String username,
                 String password,

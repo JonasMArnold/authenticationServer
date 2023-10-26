@@ -64,8 +64,6 @@ public class TestAdminTokenRequest {
 
                 var token = json.get("access_token").asText();
                 var expiry = json.get("expires_in").asInt();
-                //var refreshToken = json.get("refresh_token").asText();
-                //var refreshExpiry = json.get("refresh_expires_in").asInt();
 
                 return new BearerTokenResponseDto(token, "Bearer", expiry);
             } else {

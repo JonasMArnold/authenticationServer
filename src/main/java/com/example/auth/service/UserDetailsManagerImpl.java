@@ -67,8 +67,8 @@ public class UserDetailsManagerImpl implements UserDetailsManager, UserDetailsPa
     private User convertToUser(UserEntity userEntity) {
         return new User(
                 userEntity.getUsername(),
-                userEntity.getEmail(),
                 userEntity.getPasswordHash(),
+                userEntity.getEmail(),
                 userEntity.getFirstName(),
                 userEntity.getLastName(),
                 userEntity.getId(),
