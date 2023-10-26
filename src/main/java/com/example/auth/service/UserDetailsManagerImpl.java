@@ -2,11 +2,10 @@ package com.example.auth.service;
 
 import com.example.auth.repository.UserCacheImpl;
 import com.example.auth.repository.UserRepository;
-import com.example.auth.user.User;
-import com.example.auth.user.UserEntity;
+import com.example.auth.entity.User;
+import com.example.auth.entity.UserEntity;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -10,7 +10,7 @@ import com.example.auth.exceptions.UserCreationException;
 import com.example.auth.service.MailService;
 import com.example.auth.service.TokenService;
 import com.example.auth.service.UserService;
-import com.example.auth.user.User;
+import com.example.auth.entity.User;
 import com.example.auth.util.UrlConstants;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;

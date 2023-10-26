@@ -60,7 +60,7 @@ public class ClientConfig {
                         .requireAuthorizationConsent(false)
                         .build())
 
-                .clientSecret("{noop}Trqp1P2WxREhLL3QHFBtj4Crkv90yPcX1PekKduA")
+                .clientSecret("{noop}Trqp1P2WxhEhLL3QHFBtj4Crkv90yPcX1PekKduA")
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
                 .scope("admin_api")

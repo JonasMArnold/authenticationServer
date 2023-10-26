@@ -1,11 +1,9 @@
-package com.example.auth.user;
+package com.example.auth.entity;
 
 import com.example.auth.constraints.NameCharactersConstraint;
 import com.example.auth.constraints.UsernameConstraint;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Size;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;

@@ -1,10 +1,9 @@
 package com.example.auth.service;
 
-import com.example.auth.user.User;
+import com.example.auth.entity.User;
 import com.example.auth.util.UrlConstants;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;

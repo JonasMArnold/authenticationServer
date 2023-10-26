@@ -1,8 +1,6 @@
 package com.example.auth.repository;
 
-import com.example.auth.user.UserEntity;
-import jakarta.validation.constraints.Email;
-import lombok.NonNull;
+import com.example.auth.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

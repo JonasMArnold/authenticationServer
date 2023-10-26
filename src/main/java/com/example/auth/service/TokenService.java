@@ -2,7 +2,7 @@ package com.example.auth.service;
 
 import com.example.auth.exceptions.InvalidEmailVerificationTokenException;
 import com.example.auth.exceptions.InvalidPasswordResetTokenException;
-import com.example.auth.user.User;
+import com.example.auth.entity.User;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 

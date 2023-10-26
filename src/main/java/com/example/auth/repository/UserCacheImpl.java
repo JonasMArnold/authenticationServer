@@ -1,6 +1,6 @@
 package com.example.auth.repository;
 
-import com.example.auth.user.User;
+import com.example.auth.entity.User;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.Assert;
