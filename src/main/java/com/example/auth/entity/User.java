@@ -1,8 +1,17 @@
 package com.example.auth.entity;
 
+import com.example.auth.constraints.NameCharactersConstraint;
+import com.example.auth.constraints.UsernameConstraint;
+import com.example.auth.entity.converter.GrantedAuthorityConverter;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -19,7 +28,9 @@ import java.util.*;
 /**
  * The user object that contains information about the user
  */
+@Setter
 @Getter
+@Entity
 public class User implements UserDetails, CredentialsContainer {
 
     private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -27,16 +38,34 @@ public class User implements UserDetails, CredentialsContainer {
 
     private static final Log logger = LogFactory.getLog(User.class);
 
-    private final String username; // unique username, which can be changed
-    private String password;
-    private final UUID id; // unique user id
-    private final String email;
-    private final String firstName;
-    private final String lastName;
-    private final Set<GrantedAuthority> authorities;
+    @Id
+    private UUID id;
 
-    // Nullable
-    private final LocalDateTime accountCreationTimeStamp;
+    @UsernameConstraint
+    private String username;
+
+    private String passwordHash;
+
+    @NotNull
+    @Email
+    private String email;
+
+    @NotNull
+    @NameCharactersConstraint
+    private String firstName;
+
+    @NotNull
+    @NameCharactersConstraint
+    private String lastName;
+
+    @Convert(converter = GrantedAuthorityConverter.class)
+    private Set<GrantedAuthority> authorities;
+
+    @CreatedDate
+    private LocalDateTime accountCreationTimeStamp;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime accountDisableTimeStamp;
 
     // true if email has been verified
     private boolean emailVerified;
@@ -44,15 +73,15 @@ public class User implements UserDetails, CredentialsContainer {
     // true if the user disabled their account. Will be automatically deleted after 14 days of inactivity
     private boolean accountDisabled;
 
-    // Nullable
-    private LocalDateTime accountDisableTimeStamp;
-
     // true if moderator/admin locked the account of the user, for example because of suspicious activity
     private boolean accountLocked;
 
+
+    public User() {}
+
     // all args constructor
     public User(String username,
-                String password,
+                String passwordHash,
                 String email,
                 String firstName,
                 String lastName,
@@ -65,7 +94,7 @@ public class User implements UserDetails, CredentialsContainer {
                 LocalDateTime accountDisableTimeStamp) {
 
         this.username = username;
-        this.password = password;
+        this.passwordHash = passwordHash;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -98,7 +127,7 @@ public class User implements UserDetails, CredentialsContainer {
 
     @Override
     public void eraseCredentials() {
-        this.password = null; // removes sensitive data for logging etc.
+        this.passwordHash = null; // removes sensitive data for logging etc.
     }
 
     @Override
@@ -121,14 +150,35 @@ public class User implements UserDetails, CredentialsContainer {
         return !this.accountLocked && !this.accountDisabled;
     }
 
+    @Override
+    public String getPassword() {
+        return this.passwordHash;
+    }
+
     public User copy() {
-        return new User(this.username, this.password, this.email, this.firstName, this.lastName, this.id,
+        return new User(this.username, this.passwordHash, this.email, this.firstName, this.lastName, this.id,
                 this.authorities, this.accountDisabled, this.accountLocked, this.emailVerified,
                 this.accountCreationTimeStamp, this.accountDisableTimeStamp);
     }
 
-    public void setPassword(String newPassword) { // TODO: do this properly
-        this.password = newPassword;
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public void setPassword(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     public void setEmailVerified(boolean emailVerified) {

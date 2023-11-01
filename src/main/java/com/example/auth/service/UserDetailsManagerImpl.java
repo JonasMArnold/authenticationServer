@@ -3,7 +3,6 @@ package com.example.auth.service;
 import com.example.auth.repository.UserCacheImpl;
 import com.example.auth.repository.UserRepository;
 import com.example.auth.entity.User;
-import com.example.auth.entity.UserEntity;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.security.core.GrantedAuthority;
@@ -45,39 +44,6 @@ public class UserDetailsManagerImpl implements UserDetailsManager, UserDetailsPa
         }
     }
 
-    private UserEntity convertToEntity(User user) {
-        UserEntity entity = new UserEntity();
-
-        entity.setUsername(user.getUsername());
-        entity.setFirstName(user.getFirstName());
-        entity.setLastName(user.getLastName());
-        entity.setEmail(user.getEmail());
-        entity.setAccountDisabled(user.isAccountDisabled());
-        entity.setAuthorities(user.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority).collect(Collectors.toSet()));
-        entity.setAccountLocked(user.isAccountLocked());
-        entity.setEmailVerified(user.isEmailVerified());
-        entity.setId(user.getId());
-        entity.setPasswordHash(user.getPassword());
-
-        return entity;
-    }
-
-    private User convertToUser(UserEntity userEntity) {
-        return new User(
-                userEntity.getUsername(),
-                userEntity.getPasswordHash(),
-                userEntity.getEmail(),
-                userEntity.getFirstName(),
-                userEntity.getLastName(),
-                userEntity.getId(),
-                userEntity.getAuthorities().stream().map(SimpleGrantedAuthority::new).collect(Collectors.toSet()),
-                userEntity.isAccountDisabled(),
-                userEntity.isAccountLocked(),
-                userEntity.isEmailVerified(),
-                userEntity.getAccountCreationTimeStamp(),
-                userEntity.getAccountDisableTimeStamp());
-    }
 
     /**
      * Adds user to Database.
@@ -88,8 +54,7 @@ public class UserDetailsManagerImpl implements UserDetailsManager, UserDetailsPa
         Assert.isTrue(!userExists(user.getUsername()), "user should not exist");
         Assert.isInstanceOf(User.class, user);
 
-        UserEntity userEntity = convertToEntity((User) user);
-        this.userRepository.save(userEntity);
+        this.userRepository.save((User) user);
         this.userCache.put((User) user);
     }
 
@@ -111,8 +76,7 @@ public class UserDetailsManagerImpl implements UserDetailsManager, UserDetailsPa
         Assert.isTrue(userExists(user.getUsername()), "user should exist");
         Assert.isInstanceOf(User.class, user);
 
-        UserEntity userEntity = convertToEntity((User) user);
-        this.userRepository.save(userEntity);
+        this.userRepository.save((User) user);
         this.userCache.evict(((User) user).getId());
     }
 
@@ -164,18 +128,10 @@ public class UserDetailsManagerImpl implements UserDetailsManager, UserDetailsPa
     @Override
     public UserDetails updatePassword(UserDetails user, String newPassword) {
         Assert.isInstanceOf(User.class, user);
-        String username = user.getUsername();
-
-        Optional<UserEntity> u = this.userRepository.findByUsername(username);
-
-        if (u.isEmpty()) {
-            logger.debug("Couldn't update password because username was not found");
-            return null;
-        }
 
         ((User) user).setPassword(newPassword);
-        u.get().setPasswordHash(newPassword);
 
+        this.userRepository.save((User) user);
         this.userCache.evict(((User) user).getId());
 
         return user;
@@ -187,13 +143,13 @@ public class UserDetailsManagerImpl implements UserDetailsManager, UserDetailsPa
 
         if (user != null) return user.copy();
 
-        Optional<UserEntity> userEntity = this.userRepository.findByUsername(username);
+        Optional<User> userEntity = this.userRepository.findByUsername(username);
 
         if (userEntity.isEmpty()) {
             return null;
         }
 
-        return convertToUser(userEntity.get());
+        return userEntity.get();
     }
 
     public User loadUserById(UUID id) {
@@ -201,19 +157,19 @@ public class UserDetailsManagerImpl implements UserDetailsManager, UserDetailsPa
 
         if (user != null) return user.copy();
 
-        Optional<UserEntity> userEntity = this.userRepository.findById(id);
+        Optional<User> userEntity = this.userRepository.findById(id);
 
         if (userEntity.isEmpty()) {
             return null;
         }
 
-        return convertToUser(userEntity.get());
+        return userEntity.get();
     }
 
     public List<User> getAllUsers() {
-        Iterable<UserEntity> iter = this.userRepository.findAll();
-        return StreamSupport.stream(iter.spliterator(), false).
-                map(this::convertToUser)
-                .collect(Collectors.toList());
+        Iterable<User> iter = this.userRepository.findAll();
+
+        //TODO: paging
+        return StreamSupport.stream(iter.spliterator(), false).collect(Collectors.toList());
     }
 }

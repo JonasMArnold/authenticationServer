@@ -2,7 +2,6 @@ package com.example.auth.dto;
 
 
 import com.example.auth.entity.User;
-import com.example.auth.entity.UserEntity;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -32,18 +31,6 @@ public class UserDto {
         this.emailVerified = user.isEmailVerified();
         this.accountLocked = user.isAccountLocked();
         this.accountDisabled = user.isAccountDisabled();
-    }
-
-    public UserDto(UserEntity userEntity) {
-        this.username = userEntity.getUsername();
-        this.id = userEntity.getId();
-        this.email = userEntity.getEmail();
-        this.firstName = userEntity.getFirstName();
-        this.lastName = userEntity.getLastName();
-        this.creationTimeStamp = userEntity.getAccountCreationTimeStamp();
-        this.emailVerified = userEntity.isEmailVerified();
-        this.accountDisabled = userEntity.isAccountDisabled();
-        this.accountLocked = userEntity.isAccountLocked();
     }
 
 }

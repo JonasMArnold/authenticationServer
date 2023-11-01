@@ -6,7 +6,6 @@ import com.example.auth.repository.UserRepository;
 import com.example.auth.entity.User;
 import com.example.auth.dto.UserCreationDto;
 import com.example.auth.dto.UserDto;
-import com.example.auth.entity.UserEntity;
 import com.example.auth.util.ErrorCodeConstants;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
@@ -90,28 +89,52 @@ public class UserService {
         this.userDetailsManager.updatePassword(user, newPassword);
     }
 
+
+    public void updateUser(User user) {
+        this.userDetailsManager.updateUser(user);
+    }
+
+    /**
+     * Sets the users email verification status to the supplied parameter
+     * @param user user
+     * @param verified is email verified
+     */
     public void setVerified(User user, boolean verified) {
         user.setEmailVerified(verified);
         this.userDetailsManager.updateUser(user);
     }
 
+
     public Page<UserDto> getAllUsers(Pageable pageable) {
         return userRepository.findAll(pageable).map(this::convertToUserDto);
     }
 
+    /**
+     * Load user by id. Returns null if user was not found
+     * @param id uuid
+     * @return user
+     */
     public User getUserById(UUID id) {
         return this.userDetailsManager.loadUserById(id);
     }
 
+    /**
+     * Load user by username. Returns null if user was not found
+     * @param username username
+     * @return user
+     */
     public User getUserByUsername(String username) { return (User) this.userDetailsManager.loadUserByUsername(username); }
 
+    /**
+     * Permanently delete user by id.
+     * @param id uuid
+     */
     public void deleteUserById(UUID id) {
         String username = this.userDetailsManager.loadUserById(id).getUsername();
         this.userDetailsManager.deleteUser(username);
     }
 
-    private UserDto convertToUserDto(UserEntity userEntity) {
-        return new UserDto(userEntity);
+    private UserDto convertToUserDto(User user) {
+        return new UserDto(user);
     }
-
 }
