@@ -1,6 +1,8 @@
 package com.example.auth.config;
 
 import com.example.auth.repository.UserRepository;
+import com.example.auth.security.BlacklistedIPAddressFilter;
+import com.example.auth.security.RepeatedRequestsFilter;
 import com.example.auth.service.UserDetailsManagerImpl;
 import com.example.auth.entity.User;
 import com.example.auth.util.UrlConstants;
@@ -41,6 +43,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
@@ -78,9 +81,15 @@ public class SecurityConfig {
      */
     @Bean
     @Order(2)
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http, RegisteredClientRepository clientRepository) throws Exception {
+    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http,
+                                                                      RegisteredClientRepository clientRepository,
+                                                                      BlacklistedIPAddressFilter blacklistedIPAddressFilter,
+                                                                      RepeatedRequestsFilter repeatedRequestsFilter) throws Exception {
 
         logger.info("Creating authorizationServerSecurityFilterChain bean");
+        logger.info("Adding custom filters");
+        //http.addFilterBefore(blacklistedIPAddressFilter, BasicAuthenticationFilter.class);
+        http.addFilterBefore(repeatedRequestsFilter, BasicAuthenticationFilter.class);
 
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 

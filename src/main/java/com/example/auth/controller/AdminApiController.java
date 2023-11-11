@@ -5,7 +5,7 @@ import com.example.auth.dto.UserDto;
 import com.example.auth.exceptions.UserCreationException;
 import com.example.auth.service.UserService;
 import org.springframework.data.domain.Page;
-Aimport org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;

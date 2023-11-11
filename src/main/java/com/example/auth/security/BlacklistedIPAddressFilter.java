@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class BlacklistedIPAddressFilter extends OncePerRequestFilter {
 
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String, String> redisTemplate;
     private BlacklistedIPService blacklistedIPService;
 
 
@@ -53,6 +53,7 @@ public class BlacklistedIPAddressFilter extends OncePerRequestFilter {
 
         // Check if the IP address is blacklisted
         Optional<BlacklistedIP> blacklistedIP = blacklistedIPService.findByIpAddress(request.getRemoteAddr());
+
         if (blacklistedIP.isPresent()) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Your IP address is blacklisted.");
             return;
@@ -138,6 +139,7 @@ public class BlacklistedIPAddressFilter extends OncePerRequestFilter {
         if (redisTemplate != null) {
             // Store the IP address in Redis
             redisTemplate.opsForValue().set(ipAddress, "logged", 24, TimeUnit.HOURS);
+
             // Log that IP is saved in Redis
             logger.info("Saved IP Address " + ipAddress + " to Redis.");
         } else {
