@@ -31,6 +31,7 @@ import java.util.*;
 @Setter
 @Getter
 @Entity
+@Table(name = "user_entity", schema = "public")
 public class User implements UserDetails, CredentialsContainer {
 
     private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -39,22 +40,24 @@ public class User implements UserDetails, CredentialsContainer {
     private static final Log logger = LogFactory.getLog(User.class);
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(unique = true, nullable = false)
     @UsernameConstraint
     private String username;
 
     private String passwordHash;
 
-    @NotNull
     @Email
+    @Column(unique = true, nullable = false)
     private String email;
 
-    @NotNull
+    @Column(nullable = false)
     @NameCharactersConstraint
     private String firstName;
 
-    @NotNull
+    @Column(nullable = false)
     @NameCharactersConstraint
     private String lastName;
 

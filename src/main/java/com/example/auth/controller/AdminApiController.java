@@ -5,6 +5,7 @@ import com.example.auth.dto.UserDto;
 import com.example.auth.exceptions.UserCreationException;
 import com.example.auth.service.UserService;
 import org.springframework.data.domain.Page;
+Aimport org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Admin API for managing users
@@ -39,6 +41,14 @@ public class AdminApiController {
 
         Page<UserDto> users = userService.getAllUsers(PageRequest.of(page, size, Sort.Direction.fromString(direction), sortBy));
         return ResponseEntity.ok(users);
+    }
+
+    /**
+     * Returns total number of users
+     */
+    @GetMapping("users/count")
+    public ResponseEntity<Long> countUsers() {
+        return ResponseEntity.ok(this.userService.count());
     }
 
 

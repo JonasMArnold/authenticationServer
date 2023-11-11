@@ -137,4 +137,8 @@ public class UserService {
     private UserDto convertToUserDto(User user) {
         return new UserDto(user);
     }
+
+    public long count() {
+        return this.userRepository.count();
+    }
 }
