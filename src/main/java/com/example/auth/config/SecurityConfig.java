@@ -89,21 +89,27 @@ public class SecurityConfig {
         logger.info("Creating authorizationServerSecurityFilterChain bean");
         logger.info("Adding custom filters");
 
+        // add custom filters
         http.addFilterBefore(blacklistedIPAddressFilter, BasicAuthenticationFilter.class);
         http.addFilterBefore(repeatedRequestsFilter, BasicAuthenticationFilter.class);
 
+        // apply default security to auth server endpoints
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 
+        // enable TLS
         http.requiresChannel(channel ->
                 channel.anyRequest().requiresSecure());
 
+        // enable HSTS
         http.headers(conf ->
                 conf.httpStrictTransportSecurity(Customizer.withDefaults()));
 
+        // configure auth server
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
-                .registeredClientRepository(clientRepository) // autowired from ClientConfig.java
+                .registeredClientRepository(clientRepository)
                 .oidc(Customizer.withDefaults());
 
+        // set login page
         http.exceptionHandling((exceptions) -> exceptions
             .defaultAuthenticationEntryPointFor(
                 new LoginUrlAuthenticationEntryPoint("/login"),
@@ -114,6 +120,8 @@ public class SecurityConfig {
         http.oauth2ResourceServer((resourceServer) -> resourceServer
                 .jwt(Customizer.withDefaults()));
 
+
+        // FIXME
         http.csrf(AbstractHttpConfigurer::disable);
 
         return http.build();
@@ -131,12 +139,15 @@ public class SecurityConfig {
 
         logger.info("Creating defaultSecurityFilterChain bean");
 
+        // enable HSTS
         http.headers(conf ->
                 conf.httpStrictTransportSecurity(Customizer.withDefaults()));
 
+        // enable TLS
         http.requiresChannel(channel ->
                 channel.anyRequest().requiresSecure());
 
+        // secure all auth server pages
         http.authorizeHttpRequests((authorize) ->
                 authorize
                         .requestMatchers(new AntPathRequestMatcher("/register")).permitAll()
@@ -162,7 +173,7 @@ public class SecurityConfig {
             conf.logoutSuccessHandler(logoutSuccessHandler());
         });
 
-        // Temp disable CSRF
+        // FIXME
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(AbstractHttpConfigurer::disable);
 
@@ -185,8 +196,10 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasAuthority("SCOPE_admin_api")
                         .anyRequest().authenticated());
 
+        // stateless policy since we don't want sessions to authorize admins
         http.sessionManagement(conf -> conf.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
+        // configure as resource server
         http.oauth2ResourceServer((resourceServer) -> resourceServer
                 .jwt(customizer -> customizer.jwtAuthenticationConverter(jwtAuthenticationConverter())));
 

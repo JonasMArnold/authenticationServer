@@ -13,6 +13,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.time.Duration;
 
+/**
+ * Filters repeated requests to prevent spam.
+ */
 @Component
 public class RepeatedRequestsFilter extends OncePerRequestFilter {
 

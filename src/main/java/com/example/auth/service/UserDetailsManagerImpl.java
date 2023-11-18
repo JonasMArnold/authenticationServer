@@ -54,8 +54,8 @@ public class UserDetailsManagerImpl implements UserDetailsManager, UserDetailsPa
         Assert.isTrue(!userExists(user.getUsername()), "user should not exist");
         Assert.isInstanceOf(User.class, user);
 
-        this.userRepository.save((User) user);
-        this.userCache.put((User) user);
+        User savedUser = this.userRepository.save((User) user);
+        this.userCache.put(savedUser);
     }
 
     @Override
@@ -76,8 +76,8 @@ public class UserDetailsManagerImpl implements UserDetailsManager, UserDetailsPa
         Assert.isTrue(userExists(user.getUsername()), "user should exist");
         Assert.isInstanceOf(User.class, user);
 
-        this.userRepository.save((User) user);
-        this.userCache.evict(((User) user).getId());
+        User savedUser = this.userRepository.save((User) user);
+        this.userCache.evict(savedUser.getId());
     }
 
     /**
@@ -131,8 +131,8 @@ public class UserDetailsManagerImpl implements UserDetailsManager, UserDetailsPa
 
         ((User) user).setPassword(newPassword);
 
-        this.userRepository.save((User) user);
-        this.userCache.evict(((User) user).getId());
+        User savedUser = this.userRepository.save((User) user);
+        this.userCache.evict(savedUser.getId());
 
         return user;
     }

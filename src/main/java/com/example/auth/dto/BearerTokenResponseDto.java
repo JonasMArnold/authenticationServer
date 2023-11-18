@@ -1,5 +1,9 @@
 package com.example.auth.dto;
 
+
+/**
+ * Used for testing only. Dto for receiving a bearer token.
+ */
 public class BearerTokenResponseDto {
 
     private final String accessToken;

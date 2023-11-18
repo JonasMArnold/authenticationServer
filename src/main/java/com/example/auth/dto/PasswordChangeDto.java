@@ -4,6 +4,10 @@ import com.example.auth.constraints.PasswordConstraint;
 
 import java.util.Objects;
 
+
+/**
+ * Used to receive a "new password" request. Stores a plain text password and an opaque token.
+ */
 public class PasswordChangeDto {
 
     private final String token;

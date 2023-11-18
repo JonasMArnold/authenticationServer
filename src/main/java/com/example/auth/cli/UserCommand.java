@@ -31,13 +31,13 @@ public class UserCommand {
 
     @ShellMethod(key = "user modify")
     public String userModify(String userIdentifier,
-                             @ShellOption String userName,
-                             @ShellOption String firstName,
-                             @ShellOption String lastName,
-                             @ShellOption String email,
-                             @ShellOption Boolean verified,
-                             @ShellOption Boolean disabled,
-                             @ShellOption Boolean locked
+                             @ShellOption(value = {"--userName"}) String userName,
+                             @ShellOption(value = {"--firstName"}) String firstName,
+                             @ShellOption(value = {"--lastName"}) String lastName,
+                             @ShellOption(value = {"--email"}) String email,
+                             @ShellOption(value = {"--verified"}) Boolean verified,
+                             @ShellOption(value = {"--disabled"}) Boolean disabled,
+                             @ShellOption(value = {"--locked"}) Boolean locked
                              ) {
 
         User user = getUser(userIdentifier);
@@ -46,9 +46,9 @@ public class UserCommand {
             return "User not found";
         } else {
             if(userName != null) user.setUsername(userName);
-            if(firstName != null) user.setFirstName(userName);
-            if(lastName != null) user.setLastName(userName);
-            if(email != null) user.setEmail(userName);
+            if(firstName != null) user.setFirstName(firstName);
+            if(lastName != null) user.setLastName(lastName);
+            if(email != null) user.setEmail(email);
             if(verified != null) user.setEmailVerified(verified);
             if(locked != null) user.setEmailVerified(locked);
             if(disabled != null) user.setEmailVerified(disabled);
@@ -86,8 +86,8 @@ public class UserCommand {
         s += "Username: " + user.getUsername() + "\n";
         s += "Name: " + user.getFirstName() + " " + user.getLastName() + "\n";
         s += "Email: " + user.getEmail() + "\n";
-        s += "Email: " + user.getId() + "\n";
-        s += "Authorities: [" + user.getAuthorities().stream().reduce("", (x, a) -> a + x + ", ", String::concat) + "]\n";
+        s += "UUID: " + user.getId() + "\n";
+        s += "Authorities: [" + user.getAuthorities().stream().reduce("", (x, a) -> a + " " + x, String::concat) + "]\n";
         s += "Created on: " + user.getAccountCreationTimeStamp().format(DateTimeFormatter.BASIC_ISO_DATE) + "\n";
         s += "Verified: " + user.isEmailVerified() + "\n";
         s += "Locked: " + user.isAccountLocked() + "\n";

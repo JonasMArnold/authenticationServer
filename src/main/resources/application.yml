@@ -8,6 +8,9 @@ server:
     protocol: TLS
     enabled-protocols: TLSv1.2
 
+    # TODO: for now, disable
+    enabled: false
+
 logging:
   level:
     org.springframework.security: trace

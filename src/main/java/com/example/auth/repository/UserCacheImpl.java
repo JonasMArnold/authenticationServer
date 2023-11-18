@@ -36,9 +36,9 @@ public class UserCacheImpl {
         User user = byID.get(id);
 
         if(user == null) {
-            logger.trace("Cache miss");
+            logger.trace("Cache miss " + id);
         } else {
-            logger.trace("Cache hit");
+            logger.trace("Cache hit " + id);
         }
 
         return user;
@@ -55,9 +55,9 @@ public class UserCacheImpl {
         User user = byUsername.get(username);
 
         if(user == null) {
-            logger.trace("Cache miss");
+            logger.trace("Cache miss " + username);
         } else {
-            logger.trace("Cache hit");
+            logger.trace("Cache hit " + username);
         }
 
         return user;
@@ -105,7 +105,10 @@ public class UserCacheImpl {
     public void evict(UUID id) {
         Assert.notNull(id, "Id can't be null");
         User user = byID.remove(id);
-        byUsername.remove(user.getUsername());
+
+        if (user != null) {
+            byUsername.remove(user.getUsername());
+        }
     }
 
     /**
@@ -115,6 +118,9 @@ public class UserCacheImpl {
     public void evict(String username) {
         Assert.notNull(username, "Username can't be null");
         User user = byUsername.remove(username);
-        byID.remove(user.getId());
+
+        if (user != null) {
+            byID.remove(user.getId());
+        }
     }
 }

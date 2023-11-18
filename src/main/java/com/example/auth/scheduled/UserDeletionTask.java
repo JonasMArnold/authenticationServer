@@ -24,8 +24,12 @@ public class UserDeletionTask {
         this.userRepository = userRepository;
     }
 
-    // Run at midnight every day
-    @Scheduled(cron = "0 0 0 * * ?")
+
+    /**
+     * Check for users that are marked as "disabled".
+     * Disabled users are permanently deleted after the "deletionTimeStamp" has been reached.
+     */
+    @Scheduled(cron = "0 0 0 * * ?") // Run at midnight every day
     public void schedulePermanentDeletion() {
         logger.info("Running user deletion check.");
 

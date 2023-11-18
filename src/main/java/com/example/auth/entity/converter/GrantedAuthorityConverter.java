@@ -10,6 +10,10 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+
+/**
+ * Converts "GrantedAuthority" Sets to a String that can be saved in a Database.
+ */
 @Converter
 public class GrantedAuthorityConverter implements AttributeConverter<Set<GrantedAuthority>, String> {
 

@@ -2,6 +2,9 @@ package com.example.auth.exceptions;
 
 import com.example.auth.dto.UserCreationDto;
 
+/**
+ * Thrown when user creation failed.
+ */
 public class UserCreationException extends Throwable {
 
     private final UserCreationDto user;

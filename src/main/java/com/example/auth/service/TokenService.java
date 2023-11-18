@@ -13,6 +13,10 @@ import java.util.*;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+
+/**
+ * Issues and validates opaque token strings used for password resets / email verification.
+ */
 @Service
 public class TokenService {
 
