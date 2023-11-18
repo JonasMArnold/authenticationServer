@@ -1,20 +1,20 @@
 package com.example.auth.controller;
-;
+
 import com.example.auth.dto.UserCreationDto;
 import com.example.auth.dto.UserDto;
+import com.example.auth.entity.User;
 import com.example.auth.exceptions.UserCreationException;
 import com.example.auth.service.UserService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.Duration;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+
+;
 
 /**
  * Admin API for managing users
@@ -72,11 +72,29 @@ public class AdminApiController {
     }
 
     /**
-     * Fully deletes user from the database by id
+     * Fully deletes user from the database by id. Can not be undone.
      */
     @DeleteMapping("users/{id}")
     public ResponseEntity<String> deleteUserById(@PathVariable UUID id) {
         this.userService.deleteUserById(id);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Disables user. Account will be permanently deleted unless user signs in again within specified time frame.
+     *
+     * Timeout for deletion is given in days.
+     */
+    @PostMapping("users/disable/{id}")
+    public ResponseEntity<String> disableUser(@PathVariable UUID id, @RequestBody long timeout) {
+        User user = this.userService.getUserById(id);
+
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User not found");
+        }
+
+        this.userService.disableUser(user, Duration.ofDays(timeout));
+
         return ResponseEntity.ok().build();
     }
 

@@ -5,9 +5,7 @@ import com.example.auth.constraints.UsernameConstraint;
 import com.example.auth.entity.converter.GrantedAuthorityConverter;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.Assert;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -68,7 +67,7 @@ public class User implements UserDetails, CredentialsContainer {
     private LocalDateTime accountCreationTimeStamp;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime accountDisableTimeStamp;
+    private LocalDateTime accountDeletionDeadline;
 
     // true if email has been verified
     private boolean emailVerified;
@@ -94,7 +93,7 @@ public class User implements UserDetails, CredentialsContainer {
                 boolean accountLocked,
                 boolean emailVerified,
                 LocalDateTime accountCreationTimeStamp,
-                LocalDateTime accountDisableTimeStamp) {
+                LocalDateTime accountDeletionDeadline) {
 
         this.username = username;
         this.passwordHash = passwordHash;
@@ -107,7 +106,7 @@ public class User implements UserDetails, CredentialsContainer {
         this.emailVerified = emailVerified;
         this.accountLocked = accountLocked;
         this.accountCreationTimeStamp = accountCreationTimeStamp;
-        this.accountDisableTimeStamp = accountDisableTimeStamp;
+        this.accountDeletionDeadline = accountDeletionDeadline;
     }
 
     /**
@@ -161,7 +160,7 @@ public class User implements UserDetails, CredentialsContainer {
     public User copy() {
         return new User(this.username, this.passwordHash, this.email, this.firstName, this.lastName, this.id,
                 this.authorities, this.accountDisabled, this.accountLocked, this.emailVerified,
-                this.accountCreationTimeStamp, this.accountDisableTimeStamp);
+                this.accountCreationTimeStamp, this.accountDeletionDeadline);
     }
 
     public void setUsername(String username) {
@@ -188,9 +187,9 @@ public class User implements UserDetails, CredentialsContainer {
         this.emailVerified = emailVerified;
     }
 
-    public void setAccountDisabled(boolean accountDisabled) {
+    public void setAccountDisabled(boolean accountDisabled, Duration timeout) {
         this.accountDisabled = accountDisabled;
-        this.accountDisableTimeStamp = LocalDateTime.from(Instant.now());
+        this.accountDeletionDeadline = LocalDateTime.from(Instant.now().plus(timeout));
     }
 
     public void setAccountLocked(boolean accountLocked) {

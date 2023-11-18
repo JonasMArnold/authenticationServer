@@ -88,10 +88,17 @@ public class SecurityConfig {
 
         logger.info("Creating authorizationServerSecurityFilterChain bean");
         logger.info("Adding custom filters");
-        //http.addFilterBefore(blacklistedIPAddressFilter, BasicAuthenticationFilter.class);
+
+        http.addFilterBefore(blacklistedIPAddressFilter, BasicAuthenticationFilter.class);
         http.addFilterBefore(repeatedRequestsFilter, BasicAuthenticationFilter.class);
 
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+
+        http.requiresChannel(channel ->
+                channel.anyRequest().requiresSecure());
+
+        http.headers(conf ->
+                conf.httpStrictTransportSecurity(Customizer.withDefaults()));
 
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 .registeredClientRepository(clientRepository) // autowired from ClientConfig.java
@@ -123,6 +130,12 @@ public class SecurityConfig {
         http.securityMatcher(new NegatedRequestMatcher(new AntPathRequestMatcher("/admin/**")));
 
         logger.info("Creating defaultSecurityFilterChain bean");
+
+        http.headers(conf ->
+                conf.httpStrictTransportSecurity(Customizer.withDefaults()));
+
+        http.requiresChannel(channel ->
+                channel.anyRequest().requiresSecure());
 
         http.authorizeHttpRequests((authorize) ->
                 authorize

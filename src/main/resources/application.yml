@@ -1,5 +1,12 @@
 server:
-  port: 8081
+  port: 8443
+  ssl:
+    key-store-type: PKCS12
+    key-store: classpath:keys/auth_server.p12
+    key-store-password: JrKGTdmYgM8dLHLfB
+    key-alias: test.dev
+    protocol: TLS
+    enabled-protocols: TLSv1.2
 
 logging:
   level:

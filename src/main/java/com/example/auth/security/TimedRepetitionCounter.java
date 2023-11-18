@@ -45,7 +45,11 @@ public class TimedRepetitionCounter {
             return true;
         }
 
-        int count = counts.get(key);
+        Integer count = counts.get(key);
+
+        if (count == null) {
+            count = 0;
+        }
 
         if(count >= threshold) {
             // counted too often

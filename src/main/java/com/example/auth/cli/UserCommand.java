@@ -92,7 +92,7 @@ public class UserCommand {
         s += "Verified: " + user.isEmailVerified() + "\n";
         s += "Locked: " + user.isAccountLocked() + "\n";
         s += "Disabled: " + user.isAccountDisabled() + "\n";
-        if(user.isAccountDisabled()) s += "Disabled on: " + user.getAccountDisableTimeStamp().format(DateTimeFormatter.BASIC_ISO_DATE) + "\n";
+        if(user.isAccountDisabled()) s += "Disabled on: " + user.getAccountDeletionDeadline().format(DateTimeFormatter.BASIC_ISO_DATE) + "\n";
 
         return s;
     }

@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.UUID;
 
 /**
@@ -132,6 +133,18 @@ public class UserService {
     public void deleteUserById(UUID id) {
         String username = this.userDetailsManager.loadUserById(id).getUsername();
         this.userDetailsManager.deleteUser(username);
+    }
+
+    /**
+     * Sets user disabled with a deletion timeout. If the user does not sign in again within "timeout",
+     * the account gets permanently deleted.
+     *
+     * @param user user
+     * @param timeout deletion timeout
+     */
+    public void disableUser(User user, Duration timeout) {
+        user.setAccountDisabled(true, timeout);
+        this.userDetailsManager.updateUser(user);
     }
 
     private UserDto convertToUserDto(User user) {
