@@ -123,4 +123,12 @@ public class UserCacheImpl {
             byID.remove(user.getId());
         }
     }
+
+    /**
+     * Clears entire cache
+     */
+    public void clear() {
+        this.byID.clear();
+        this.byUsername.clear();
+    }
 }

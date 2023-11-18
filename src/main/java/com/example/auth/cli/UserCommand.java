@@ -9,6 +9,8 @@ import org.springframework.shell.standard.ShellOption;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
+import static com.example.auth.util.Util.getUser;
+
 @ShellComponent
 public class UserCommand {
 
@@ -20,7 +22,7 @@ public class UserCommand {
 
     @ShellMethod(key = "user info")
     public String userInfo(String userIdentifier) {
-        User user = getUser(userIdentifier);
+        User user = getUser(userService, userIdentifier);
 
         if(user == null) {
             return "User not found";
@@ -40,7 +42,7 @@ public class UserCommand {
                              @ShellOption(value = {"--locked"}) Boolean locked
                              ) {
 
-        User user = getUser(userIdentifier);
+        User user = getUser(this.userService, userIdentifier);
 
         if(user == null) {
             return "User not found";
@@ -55,28 +57,6 @@ public class UserCommand {
 
             this.userService.updateUser(user);
             return "";
-        }
-    }
-
-
-    /**
-     * Parse user from string. First, the identifier is interpreted as a UUID. If parsing fails, interpret it as a
-     * username
-     *
-     * @param userIdentifier user identifier
-     * @return user or null if not found
-     */
-    private User getUser(String userIdentifier) {
-        try {
-            // try to parse identifier to a UUID
-            UUID id = UUID.fromString(userIdentifier);
-
-            //if parsed successfully, find user by id
-            return this.userService.getUserById(id);
-
-        } catch(IllegalArgumentException ignored) {
-            // try to find user by username
-            return this.userService.getUserByUsername(userIdentifier);
         }
     }
 

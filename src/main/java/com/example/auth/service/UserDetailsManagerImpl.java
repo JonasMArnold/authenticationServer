@@ -172,4 +172,8 @@ public class UserDetailsManagerImpl implements UserDetailsManager, UserDetailsPa
         //TODO: paging
         return StreamSupport.stream(iter.spliterator(), false).collect(Collectors.toList());
     }
+
+    public UserCacheImpl getUserCache() {
+        return this.userCache;
+    }
 }
