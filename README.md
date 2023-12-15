@@ -1,5 +1,5 @@
 <h1> 
-    Authentication and Authorization Server
+    Authorization Server
 </h1>
 
 <p>
