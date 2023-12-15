@@ -15,7 +15,7 @@ import java.util.Map;
 @Service
 public class MailService {
 
-    private static final String SOURCE_ADDRESS = "pokermindgto@gmail.com";
+    private static final String SOURCE_ADDRESS = "auth@noreply.com";
 
     private final TemplateEngine emailTemplateEngine;
     private final JavaMailSender emailSender;
